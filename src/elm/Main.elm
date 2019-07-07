@@ -80,6 +80,7 @@ view model =
     { title = "URL Interceptor"
     , body =
         [ pre [] [ text (Url.toString model.url) ]
+        , p [] [ text <| "Note that token: " ++ (Maybe.withDefault "(none)" <| Maybe.andThen Url.percentDecode <| Maybe.andThen .query <| Maybe.andThen Url.fromString <| Maybe.map (\x -> "https://X'?" ++ x) model.url.fragment) ]
         , ul []
             [ viewLink "/about"
             , viewLink "/home"
