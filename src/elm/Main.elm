@@ -7,10 +7,10 @@ import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, a, li, main_, p, pre, text, ul)
 import Html.Attributes exposing (class, href)
-import Strings exposing (prepend)
 import Url exposing (Url)
 import Url.Parser exposing (parse, query)
 import Url.Parser.Query as Query
+import Utils exposing (ifNothing, prepend)
 
 
 main =
@@ -57,10 +57,6 @@ toToken : Query.Parser (Maybe Token)
 toToken =
     Query.string "access_token"
 
-ifNothing : Maybe a -> Maybe a -> Maybe a
-ifNothing default val = case val of
-    Nothing -> default
-    Just x -> Just x
 
 
 -- UPDATE
@@ -77,16 +73,23 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    Debug.log "Internal"
-                        ( {model | token = ifNothing (extractToken url) model.token}, Nav.pushUrl model.key (Url.toString url) )
+                    let
+                        newModel =
+                            { model | token = ifNothing (extractToken url) model.token }
+                    in
+                    Debug.log "Internal" ( newModel, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
                     Debug.log "External"
                         ( model, Nav.load href )
 
         UrlChanged url ->
+            let
+                newModel =
+                    { model | url = url, token = ifNothing (extractToken url) model.token }
+            in
             Debug.log "UrlChanged"
-                ( { model | url = url, token = ifNothing (extractToken url) model.token }, Cmd.none )
+                ( newModel, Cmd.none )
 
 
 
