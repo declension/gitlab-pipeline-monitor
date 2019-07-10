@@ -5,9 +5,12 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, li, main_, p, pre, text, ul)
+import Html exposing (Html, a, li, main_, nav, pre, small, text, ul)
 import Html.Attributes exposing (class, href)
-import Url exposing (Url)
+import Http exposing (Error, Header, emptyBody, expectJson, header)
+import Json.Decode exposing (Decoder, field, list, string)
+import Result exposing (Result)
+import Url exposing (Protocol(..), Url)
 import Url.Parser exposing (parse, query)
 import Url.Parser.Query as Query
 import Utils exposing (ifNothing, prepend)
@@ -33,15 +36,54 @@ type alias Token =
 
 
 type alias Model =
-    { key : Nav.Key
+    { config : Flags
+    , key : Nav.Key
     , token : Maybe Token
+    , jobs : List String
     , url : Url.Url
     }
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+type alias Flags =
+    { gitlabUrl : String
+    , gitlabProject : Int
+    }
+
+
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( Model key (extractToken url) url, Cmd.none )
+    let
+        token =
+            extractToken url
+
+        fullUrl =
+            flags.gitlabUrl ++ "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/jobs"
+    in
+    ( { config = flags, key = key, token = token, url = url, jobs = [] }, maybeGetProjectsWith fullUrl token )
+
+
+maybeGetProjectsWith : String -> Maybe Token -> Cmd Msg
+maybeGetProjectsWith fullUrl maybeToken =
+    case maybeToken of
+        Nothing ->
+            Debug.log "Not doing HTTP, no token"
+                Cmd.none
+
+        Just token ->
+            Http.request
+                { method = "GET"
+                , url = fullUrl
+                , body = emptyBody
+                , expect = expectJson GotProjects projectsDecoder
+                , headers = [ header "Authorization" ("Bearer " ++ token) ]
+                , timeout = Just (10.0 * 1000.0)
+                , tracker = Nothing
+                }
+
+
+projectsDecoder : Decoder (List String)
+projectsDecoder =
+    list (field "name" string)
 
 
 extractToken : Url -> Maybe Token
@@ -64,6 +106,7 @@ toToken =
 
 type Msg
     = LinkClicked Browser.UrlRequest
+    | GotProjects (Result Error (List String))
     | UrlChanged Url.Url
 
 
@@ -91,6 +134,14 @@ update msg model =
             Debug.log "UrlChanged"
                 ( newModel, Cmd.none )
 
+        GotProjects (Err err) ->
+            Debug.log ("Massive fail (" ++ Debug.toString err ++ "). Current model")
+                ( model, Cmd.none )
+
+        GotProjects (Ok values) ->
+            Debug.log ("GOT something " ++ Debug.toString values)
+                ( { model | jobs = values }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -109,24 +160,22 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "URL Interceptor"
     , body =
-        [ pre [] [ text (Url.toString model.url) ]
-        , ul []
-            [ viewLink "/about"
-            , viewLink "/home"
+        [ nav []
+            [ ul []
+                [ viewLink "/about"
+                , viewLink "/home"
+                ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
-            [ pre [] [ text (Maybe.withDefault "(none)" model.token) ]
-            , p [] [ text """Lorem ipsum dolor sit amet consectetur adipiscing elit gravida et,
-                             fusce montes magnis aptent sagittis convallis praesent molestie dictumst turpis,
-                             porttitor mauris pretium quis faucibus morbi himenaeos tortor.
-                             Semper class nullam metus pretium habitant tellus inceptos venenatis facilisi laoreet
-                             etiam massa, cum eu dui fusce lobortis sem magna duis iaculis aliquam.
-                             A dui eleifend condimentum felis aliquam mus nulla,
-                             quam primis vehicula nec varius justo imperdiet,
-                             habitant fames hac vel cursus egestas.""" ]
+            [ small [] [ pre [] [ text (Maybe.withDefault "(none)" model.token) ] ]
+            , ul [] (List.map itemOf model.jobs)
             ]
         ]
     }
+
+
+itemOf content =
+    li [] [ text content ]
 
 
 viewLink : String -> Html msg
