@@ -6,9 +6,9 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, a, li, main_, nav, pre, small, text, ul)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, target)
 import Http exposing (Error, Header, emptyBody, expectJson, header)
-import Json.Decode exposing (Decoder, field, list, string)
+import Json.Decode as D exposing (Decoder)
 import Result exposing (Result)
 import Url exposing (Protocol(..), Url)
 import Url.Parser exposing (parse, query)
@@ -39,7 +39,7 @@ type alias Model =
     { config : Flags
     , key : Nav.Key
     , token : Maybe Token
-    , jobs : List String
+    , pipelines : List Pipeline
     , url : Url.Url
     }
 
@@ -50,6 +50,22 @@ type alias Flags =
     }
 
 
+type Status
+    = Success
+    | Failed
+    | Pending
+    | Cancelled
+    | Unknown
+
+
+type alias Pipeline =
+    { ref : String
+    , id : Int
+    , status : Status
+    , url : String
+    }
+
+
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -57,13 +73,13 @@ init flags url key =
             extractToken url
 
         fullUrl =
-            flags.gitlabUrl ++ "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/jobs"
+            flags.gitlabUrl ++ "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines?per_page=50"
     in
-    ( { config = flags, key = key, token = token, url = url, jobs = [] }, maybeGetProjectsWith fullUrl token )
+    ( { config = flags, key = key, token = token, url = url, pipelines = [] }, maybeGetRootData fullUrl token )
 
 
-maybeGetProjectsWith : String -> Maybe Token -> Cmd Msg
-maybeGetProjectsWith fullUrl maybeToken =
+maybeGetRootData : String -> Maybe Token -> Cmd Msg
+maybeGetRootData fullUrl maybeToken =
     case maybeToken of
         Nothing ->
             Debug.log "Not doing HTTP, no token"
@@ -74,16 +90,47 @@ maybeGetProjectsWith fullUrl maybeToken =
                 { method = "GET"
                 , url = fullUrl
                 , body = emptyBody
-                , expect = expectJson GotProjects projectsDecoder
+                , expect = expectJson GotProjects pipelinesDecoder
                 , headers = [ header "Authorization" ("Bearer " ++ token) ]
                 , timeout = Just (10.0 * 1000.0)
                 , tracker = Nothing
                 }
 
 
+pipelinesDecoder : Decoder (List Pipeline)
+pipelinesDecoder =
+    D.list pipelineDecoder
+
+
+pipelineDecoder : Decoder Pipeline
+pipelineDecoder =
+    D.map4 Pipeline
+        (D.field "ref" D.string)
+        (D.field "id" D.int)
+        (D.field "status" statusDecoder)
+        (D.field "web_url" D.string)
+
+
+statusDecoder : Decoder Status
+statusDecoder =
+    let
+        conv val =
+            case val of
+                "success" ->
+                    Success
+
+                "failed" ->
+                    Failed
+
+                _ ->
+                    Unknown
+    in
+    D.string |> D.map conv
+
+
 projectsDecoder : Decoder (List String)
 projectsDecoder =
-    list (field "name" string)
+    D.list (D.field "name" D.string)
 
 
 extractToken : Url -> Maybe Token
@@ -106,7 +153,7 @@ toToken =
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | GotProjects (Result Error (List String))
+    | GotProjects (Result Error (List Pipeline))
     | UrlChanged Url.Url
 
 
@@ -140,7 +187,7 @@ update msg model =
 
         GotProjects (Ok values) ->
             Debug.log ("GOT something " ++ Debug.toString values)
-                ( { model | jobs = values }, Cmd.none )
+                ( { model | pipelines = values }, Cmd.none )
 
 
 
@@ -162,20 +209,21 @@ view model =
     , body =
         [ nav []
             [ ul []
-                [ viewLink "/about"
+                [ viewLink "/all"
                 , viewLink "/home"
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
             [ small [] [ pre [] [ text (Maybe.withDefault "(none)" model.token) ] ]
-            , ul [] (List.map itemOf model.jobs)
+            , ul [] (List.map pipelineItemOf model.pipelines)
             ]
         ]
     }
 
 
-itemOf content =
-    li [] [ text content ]
+pipelineItemOf : Pipeline -> Html msg
+pipelineItemOf content =
+    li [] [ a [ href content.url, target "_blank" ] [ text content.ref ] ]
 
 
 viewLink : String -> Html msg
