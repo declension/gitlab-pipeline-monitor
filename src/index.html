@@ -7,7 +7,7 @@
         html {
             font-family: Roboto, sans-serif;
             background-color: black;
-            color: hsl(0, 0%, 90%);
+            color: hsl(0, 0%, 99%);
         }
 
         body {
@@ -27,8 +27,21 @@
         }
         body a:hover {
             opacity: 1.0;
-            text-decoration: underline;
-            text-decoration-color: hsl(0,0%, 60%);
+        }
+        span.emoji {
+            font-family: serif;
+            opacity: 0.85;
+            font-size: 0.85rem;
+        }
+        ol.pipelines {
+            list-style: none;
+        }
+        ol.pipelines a {
+            display: block;
+            background: hsla(0, 0%, 15%);
+            padding: 0.5rem;
+            border: 2px solid hsl(0, 0%, 20%);
+            margin-bottom: 0.75rem;
         }
         nav {
             border: 2px solid hsl(0, 0%, 50%);

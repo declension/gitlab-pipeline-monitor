@@ -5,7 +5,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, li, main_, nav, pre, small, text, ul)
+import Html exposing (Html, a, li, main_, nav, ol, pre, small, span, text, ul)
 import Html.Attributes exposing (class, href, target)
 import Http exposing (Error, Header, emptyBody, expectJson, header)
 import Json.Decode as D exposing (Decoder)
@@ -215,7 +215,7 @@ view model =
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
             [ small [] [ pre [] [ text (Maybe.withDefault "(none)" model.token) ] ]
-            , ul [] (List.map pipelineItemOf model.pipelines)
+            , ol [ class "pipelines" ] (List.map pipelineItemOf model.pipelines)
             ]
         ]
     }
@@ -223,7 +223,24 @@ view model =
 
 pipelineItemOf : Pipeline -> Html msg
 pipelineItemOf content =
-    li [] [ a [ href content.url, target "_blank" ] [ text content.ref ] ]
+    li []
+        [ a [ href content.url, target "_blank" ]
+            [ text content.ref
+            , span [ class "emoji" ] [ iconFor content.status |> prepend " " |> text ]
+            ]
+        ]
+
+
+iconFor status =
+    case status of
+        Success ->
+            "😀"
+
+        Failed ->
+            "😟"
+
+        _ ->
+            "😶"
 
 
 viewLink : String -> Html msg
