@@ -8,6 +8,7 @@
             font-family: Roboto, sans-serif;
             background-color: black;
             color: hsl(0, 0%, 99%);
+            font-size: 1.2rem;
         }
 
         body {
@@ -17,37 +18,61 @@
             min-height: 40rem;
             height: 100%;
         }
+
         main {
             padding: 2rem;
         }
+
+        nav {
+            height: 3rem;
+            padding: 1rem;
+            background-color: hsl(5, 35%, 15%);
+        }
+        nav ul {
+            list-style:none;
+            display: flex;
+        }
+        nav ul li a {
+            display: block;
+            padding: 0.5rem;
+            width: 10rem;
+            border: 1px solid grey;
+            margin: 1rem;
+            border-radius: 0.25rem;
+        }
+
         body a {
-            color:inherit;
+            color: inherit;
             opacity: 0.92;
             text-decoration: none;
         }
+
         body a:hover {
             opacity: 1.0;
         }
+
         span.emoji {
             font-family: serif;
             opacity: 0.85;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+        }
+
+        main pre {
+            opacity: 0.3;
         }
         ol.pipelines {
             list-style: none;
         }
+
         ol.pipelines a {
             display: block;
             background: hsla(0, 0%, 15%);
-            padding: 0.5rem;
+            height: 3rem;
+            padding: 0.75rem 0.75rem 0;
             border: 2px solid hsl(0, 0%, 20%);
             margin-bottom: 0.75rem;
         }
-        nav {
-            border: 2px solid hsl(0, 0%, 50%);
-            height: 4rem;
-            padding: 1rem;
-        }
+
     </style>
 
 </head>

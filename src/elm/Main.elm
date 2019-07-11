@@ -205,12 +205,12 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "URL Interceptor"
+    { title = "ARRIVAL RED: CI status"
     , body =
         [ nav []
             [ ul []
-                [ viewLink "/all"
-                , viewLink "/home"
+                [ viewLink "/core"
+                , viewLink "/research"
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
