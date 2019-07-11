@@ -15,3 +15,5 @@ dist/
 # JS / Yarn
 node_modules
 *.log
+
+.env
