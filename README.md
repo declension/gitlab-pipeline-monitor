@@ -26,8 +26,9 @@ yarn
 ```
 
 ### Run
-1. Edit the [`.env`](./.env) file in the root, and fill in the endpoint for your Gitlab URL and the project to watch.
-2. Run the dev server (with HMR):
+1. Register a new app in your Gitlab UI e.g. https://gitlab.example.com/profile/applications
+1. Edit the [`.env`](./.env) file in the root, and fill in the endpoint for your Gitlab hostname (assumes port 443 for now), the project ID to watch and the newly created Application ID.
+1. Run the dev server (with HMR):
 ```
 yarn serve
 ```

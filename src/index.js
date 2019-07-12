@@ -3,7 +3,8 @@ import {Elm} from "./elm/Main.elm";
 
 Elm.Main.init({
     flags: {
-        gitlabUrl: process.env.GITLAB_URL,
-        gitlabProject: parseInt(process.env.GITLAB_PROJECT)
+        gitlabHost: process.env.GITLAB_HOST,
+        gitlabProject: parseInt(process.env.GITLAB_PROJECT),
+        gitlabAppId: process.env.GITLAB_APP_ID
     }
 });

@@ -5,15 +5,17 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, li, main_, nav, ol, pre, small, span, text, ul)
+import Html exposing (Html, a, h3, li, main_, nav, ol, span, text, ul)
 import Html.Attributes exposing (class, href, target)
 import Http exposing (Error, Header, emptyBody, expectJson, header)
 import Json.Decode as D exposing (Decoder)
+import List
 import Result exposing (Result)
 import Url exposing (Protocol(..), Url)
+import Url.Builder as Builder exposing (QueryParameter(..))
 import Url.Parser exposing (parse, query)
 import Url.Parser.Query as Query
-import Utils exposing (ifNothing, prepend)
+import Utils exposing (ifNothing, prepend, relativise)
 
 
 main =
@@ -45,8 +47,9 @@ type alias Model =
 
 
 type alias Flags =
-    { gitlabUrl : String
+    { gitlabHost : String
     , gitlabProject : Int
+    , gitlabAppId : String
     }
 
 
@@ -72,8 +75,9 @@ init flags url key =
         token =
             extractToken url
 
+        -- TODO: use proper URLs
         fullUrl =
-            flags.gitlabUrl ++ "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines?per_page=50"
+            "https://" ++ flags.gitlabHost ++ "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines?per_page=50"
     in
     ( { config = flags, key = key, token = token, url = url, pipelines = [] }, maybeGetRootData fullUrl token )
 
@@ -214,11 +218,48 @@ view model =
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
-            [ small [] [ pre [] [ text (Maybe.withDefault "(none)" model.token) ] ]
-            , ol [ class "pipelines" ] (List.map pipelineItemOf model.pipelines)
-            ]
+            ([ ol [ class "pipelines" ] (List.map pipelineItemOf model.pipelines)
+             ]
+                ++ maybeViewOauthLink model
+            )
         ]
     }
+
+
+authUrlFor : Flags -> Url -> Url
+authUrlFor config currentUrl =
+    { protocol = Https
+    , host = config.gitlabHost
+    , port_ = Nothing
+    , path = Builder.absolute [ "oauth", "authorize" ] []
+    , query =
+        Just <|
+            String.join "&" <|
+                List.map toQueryPair
+                    [ ( "client_id", config.gitlabAppId )
+                    , ( "response_type", "token" )
+
+                    -- TODO: inject state and persist
+                    , ( "state", "1234" )
+                    , ( "redirect_uri", Url.toString currentUrl )
+                    ]
+    , fragment = Nothing
+    }
+
+
+toQueryPair : ( String, String ) -> String
+toQueryPair ( key, value ) =
+    Url.percentEncode key ++ "=" ++ Url.percentEncode value
+
+
+maybeViewOauthLink : Model -> List (Html msg)
+maybeViewOauthLink model =
+    case model.token of
+        Nothing ->
+            [ h3 [] [ a [ href <| Url.toString <| authUrlFor model.config (relativise model.url "/redirect") ] [ text "Authorise in GitLab" ] ] ]
+
+        _ ->
+            []
 
 
 pipelineItemOf : Pipeline -> Html msg
