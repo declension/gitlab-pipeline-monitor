@@ -1,7 +1,7 @@
 module Main exposing (main)
 
-import Browser
-import Browser.Navigation as Nav
+import Browser exposing (UrlRequest(..))
+import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Http exposing (Error, Header, emptyBody, expectJson, header)
 import Json.Decode as D exposing (Decoder)
 import Model exposing (Flags, Model, Msg(..), Pipeline, Status(..), Token)
@@ -30,7 +30,7 @@ emptyHttps =
     { protocol = Https, host = "", port_ = Nothing, path = "", query = Nothing, fragment = Nothing }
 
 
-init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         token =
@@ -43,26 +43,32 @@ init flags url key =
                 , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 50 ]
             }
     in
-    ( { config = flags, key = key, token = token, url = url, pipelines = [] }, maybeGetRootData fullUrl token )
+    ( { config = flags, key = key, token = token, url = url, pipelines = [] }, maybeGetRootData key url fullUrl token )
 
 
-maybeGetRootData : Url -> Maybe Token -> Cmd Msg
-maybeGetRootData fullUrl maybeToken =
+maybeGetRootData : Key -> Url -> Url -> Maybe Token -> Cmd Msg
+maybeGetRootData key siteUrl endpointUrl maybeToken =
     case maybeToken of
         Nothing ->
-            Debug.log "Not doing HTTP, no token"
-                Cmd.none
+            Cmd.none
 
         Just token ->
-            Http.request
-                { method = "GET"
-                , url = Url.toString fullUrl
-                , body = emptyBody
-                , expect = expectJson GotProjects pipelinesDecoder
-                , headers = [ header "Authorization" ("Bearer " ++ token) ]
-                , timeout = Just (10.0 * 1000.0)
-                , tracker = Nothing
-                }
+            let
+                newUrl =
+                    { siteUrl | path = "/", fragment = Nothing, query = Nothing }
+            in
+            Cmd.batch
+                [ replaceUrl key (Url.toString newUrl)
+                , Http.request
+                    { method = "GET"
+                    , url = Url.toString endpointUrl
+                    , body = emptyBody
+                    , expect = expectJson GotProjects pipelinesDecoder
+                    , headers = [ header "Authorization" ("Bearer " ++ token) ]
+                    , timeout = Just (10.0 * 1000.0)
+                    , tracker = Nothing
+                    }
+                ]
 
 
 pipelinesDecoder : Decoder (List Pipeline)
