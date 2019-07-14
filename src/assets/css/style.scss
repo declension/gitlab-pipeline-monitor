@@ -19,19 +19,6 @@ main {
     pre {
         opacity: 0.3;
     }
-
-    li {
-        a {
-            color: inherit;
-            opacity: 0.92;
-            text-decoration: none;
-        }
-
-        a:hover {
-            opacity: 1.0;
-            background-color: hsla(0, 0%, 15%, 1.0);
-        }
-    }
 }
 
 nav {
@@ -62,6 +49,12 @@ nav {
     }
 }
 
+li {
+    a {
+        color: inherit;
+    }
+}
+
 
 span.emoji {
     font-family: serif;
@@ -73,6 +66,9 @@ ol.pipelines {
     list-style: none;
 
     a {
+        text-decoration: none;
+        opacity: 0.92;
+
         display: block;
         background: hsla(0, 0%, 15%, 0.8);
         height: 3rem;
@@ -80,5 +76,11 @@ ol.pipelines {
         border: 2px solid hsla(0, 0%, 18%, 0.6);
         margin-bottom: 0.75rem;
     }
+
+    a:hover {
+        opacity: 1.0;
+        background-color: hsla(0, 0%, 15%, 1.0);
+    }
+
 }
 
