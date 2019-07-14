@@ -1,12 +1,11 @@
-module Model exposing (..)
-
--- MODEL
-
+module Model exposing (Flags, Model, Msg(..), Pipeline, Status(..), Token)
 
 import Browser
 import Browser.Navigation as Nav
 import Http
 import Url
+
+
 type alias Token =
     String
 
@@ -43,9 +42,7 @@ type alias Pipeline =
     }
 
 
-
 type Msg
     = LinkClicked Browser.UrlRequest
     | GotProjects (Result Http.Error (List Pipeline))
     | UrlChanged Url.Url
-
