@@ -14,7 +14,7 @@ jobs:
           keys:
             - elm-0.19-node_modules-dependencies-{{ checksum "package.json" }}
 
-      - run: npm install
+      - run: yarn install
 
       - save_cache:
           paths:

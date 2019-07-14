@@ -10,8 +10,13 @@ prepend prefix str =
     prefix ++ str
 
 
-stripQuestion =
-    String.dropLeft 1
+stripQuestion str =
+    case String.uncons str of
+        Just ( '?', rest ) ->
+            rest
+
+        _ ->
+            str
 
 
 {-| Provide a default if `Nothing`, but stay in the Maybe monad.
