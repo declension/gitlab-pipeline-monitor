@@ -16,8 +16,7 @@ view model =
     , body =
         [ nav []
             [ ul []
-                [ viewLink "/core"
-                , viewLink "/research"
+                [ viewLink "/" "all"
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
@@ -87,6 +86,6 @@ iconFor status =
             "😶"
 
 
-viewLink : String -> Html msg
-viewLink path =
-    li [] [ a [ href path ] [ text path ] ]
+viewLink : String -> String -> Html msg
+viewLink path name =
+    li [] [ a [ href path ] [ text name ] ]

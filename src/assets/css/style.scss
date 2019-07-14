@@ -49,10 +49,12 @@ nav {
     }
 }
 
-li {
-    a {
-        color: inherit;
-    }
+a {
+    color: inherit;
+}
+
+a:visited {
+    color: inherit;
 }
 
 
