@@ -1,10 +1,12 @@
-module Model exposing (Flags, GitlabData, Model, Msg(..), Pipeline, Project, Status(..), Token)
+module Model exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
+import Dict exposing (Dict)
 import Http
 import Time exposing (Posix)
 import Url
+
 
 type alias Token =
     String
@@ -19,9 +21,13 @@ type alias Model =
     }
 
 
+type alias ProjectId =
+    Int
+
+
 type alias GitlabData =
     { projects : List Project
-    , pipelines : List Pipeline
+    , pipelines : Dict ProjectId (List Pipeline)
     }
 
 
@@ -51,14 +57,14 @@ type alias Pipeline =
 type alias Project =
     { id : Int
     , name : String
-    , description: Maybe String
+    , description : Maybe String
     , url : String
-    , lastActivity: Posix
+    , lastActivity : Posix
     }
 
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | GotPipelines (Result Http.Error (List Pipeline))
+    | GotPipelinesFor ProjectId (Result Http.Error (List Pipeline))
     | GotProjects (Result Http.Error (List Project))
     | UrlChanged Url.Url

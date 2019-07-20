@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav exposing (Key, replaceUrl)
+import Dict
 import Model exposing (Flags, Model, Msg(..), Pipeline, Status(..), Token)
 import Result exposing (Result)
 import Url exposing (Protocol(..), Url)
@@ -28,7 +29,7 @@ init flags url key =
             extractToken url
 
         model =
-            { config = flags, key = key, token = token, url = url, data = { pipelines = [], projects = [] } }
+            { config = flags, key = key, token = token, url = url, data = { pipelines = Dict.empty, projects = [] } }
     in
     ( model, maybeGetRootData key url flags token )
 
@@ -46,7 +47,7 @@ maybeGetRootData key siteUrl flags maybeToken =
             in
             Cmd.batch
                 [ replaceUrl key (Url.toString newUrl)
-                , getUrl token (pipelinesUrl flags) GotPipelines pipelinesDecoder
+                , getUrl token (pipelinesUrl flags) (GotPipelinesFor 864) pipelinesDecoder
                 , getUrl token (projectsUrl flags) GotProjects projectsDecoder
                 ]
 
@@ -83,15 +84,19 @@ update msg model =
             Debug.log "UrlChanged"
                 ( newModel, Cmd.none )
 
-        GotPipelines result ->
+        GotPipelinesFor projectId result ->
             case result of
                 Err err ->
                     Debug.log ("FAILED to get pipelines (" ++ Debug.toString err ++ "). Current model")
                         ( model, Cmd.none )
 
                 Ok values ->
+                    let
+                        newPipelines =
+                            Dict.insert projectId values data.pipelines
+                    in
                     Debug.log ("Got pipelines" ++ Debug.toString values)
-                        ( { model | data = { data | pipelines = values } }, Cmd.none )
+                        ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
 
         GotProjects result ->
             case result of

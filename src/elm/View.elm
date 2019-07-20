@@ -1,9 +1,10 @@
 module View exposing (authUrlFor, iconFor, maybeViewOauthLink, pipelineItemOf, toQueryPair, view, viewLink)
 
 import Browser
+import Dict
 import Html exposing (Html, a, h3, li, main_, nav, ol, small, span, text, ul)
 import Html.Attributes exposing (class, href, target)
-import Model exposing (Flags, Model, Msg, Pipeline, Status(..))
+import Model exposing (Flags, Model, Msg, Pipeline, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder
 import Utils exposing (prepend, relativise)
@@ -23,12 +24,17 @@ view model =
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
-            ([ ol [ class "pipelines" ] (List.map pipelineItemOf model.data.pipelines)
-             ]
-                ++ maybeViewOauthLink model
-            )
+            ([projectPipelines model 864] ++ maybeViewOauthLink model)
         ]
     }
+
+
+projectPipelines : Model -> ProjectId -> Html Msg
+projectPipelines model projectId =
+    ol [ class "pipelines" ] <|
+        Maybe.withDefault [ h3 [] [ text "No pipelines found..." ] ] <|
+            Maybe.map (List.map pipelineItemOf) <|
+                Dict.get projectId model.data.pipelines
 
 
 authUrlFor : Flags -> Url -> Url
