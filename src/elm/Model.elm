@@ -14,8 +14,14 @@ type alias Model =
     { config : Flags
     , key : Nav.Key
     , token : Maybe Token
-    , pipelines : List Pipeline
+    , data : GitlabData
     , url : Url.Url
+    }
+
+
+type alias GitlabData =
+    { projects : List Project
+    , pipelines : List Pipeline
     }
 
 
@@ -42,7 +48,17 @@ type alias Pipeline =
     }
 
 
+type Project
+    = Project
+        { ref : String
+        , id : Int
+        , status : Status
+        , url : String
+        }
+
+
 type Msg
     = LinkClicked Browser.UrlRequest
     | GotPipelines (Result Http.Error (List Pipeline))
+    | GotProjects (Result Http.Error (List Project))
     | UrlChanged Url.Url

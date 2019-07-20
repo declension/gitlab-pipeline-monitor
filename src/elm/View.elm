@@ -23,7 +23,7 @@ view model =
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
-            ([ ol [ class "pipelines" ] (List.map pipelineItemOf model.pipelines)
+            ([ ol [ class "pipelines" ] (List.map pipelineItemOf model.data.pipelines)
              ]
                 ++ maybeViewOauthLink model
             )
