@@ -1,8 +1,9 @@
-module Wire exposing (emptyHttps, extractToken, getUrl, pipelineDecoder, pipelinesDecoder, pipelinesUrl, projectsDecoder, statusDecoder, toToken)
+module Wire exposing (blankable, emptyHttps, extractToken, getUrl, pipelineDecoder, pipelinesDecoder, pipelinesUrl, projectDecoder, projectsDecoder, projectsUrl, statusDecoder, toToken)
 
 import Http exposing (emptyBody, expectJson, header)
+import Iso8601
 import Json.Decode as D exposing (Decoder)
-import Model exposing (Flags, Msg(..), Pipeline, Status(..), Token)
+import Model exposing (Flags, Msg(..), Pipeline, Project, Status(..), Token)
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder exposing (toQuery)
 import Url.Parser exposing (parse, query)
@@ -28,6 +29,15 @@ pipelinesUrl flags =
     { emptyHttps
         | host = flags.gitlabHost
         , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
+        , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 30 ]
+    }
+
+
+projectsUrl : Flags -> Url
+projectsUrl flags =
+    { emptyHttps
+        | host = flags.gitlabHost
+        , path = "/api/v4/projects/"
         , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 30 ]
     }
 
@@ -68,9 +78,34 @@ statusDecoder =
     D.string |> D.map conv
 
 
-projectsDecoder : Decoder (List String)
+projectsDecoder : Decoder (List Project)
 projectsDecoder =
-    D.list (D.field "name" D.string)
+    D.list projectDecoder
+
+
+projectDecoder : Decoder Project
+projectDecoder =
+    D.map5 Project
+        (D.field "id" D.int)
+        (D.field "name" D.string)
+        (D.field "description" blankable)
+        (D.field "web_url" D.string)
+        (D.field "last_activity_at" <| Iso8601.decoder)
+
+
+blankable : Decoder (Maybe String)
+blankable =
+    D.string
+        |> D.nullable
+        |> D.map
+            (\str ->
+                case str of
+                    Just "" ->
+                        Nothing
+
+                    dunno ->
+                        dunno
+            )
 
 
 extractToken : Url -> Maybe Token

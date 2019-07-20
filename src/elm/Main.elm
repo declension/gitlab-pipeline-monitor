@@ -7,7 +7,7 @@ import Result exposing (Result)
 import Url exposing (Protocol(..), Url)
 import Utils exposing (ifNothing)
 import View exposing (view)
-import Wire exposing (extractToken, getUrl, pipelinesDecoder, pipelinesUrl)
+import Wire exposing (extractToken, getUrl, pipelinesDecoder, pipelinesUrl, projectsDecoder, projectsUrl)
 
 
 main =
@@ -30,11 +30,11 @@ init flags url key =
         model =
             { config = flags, key = key, token = token, url = url, data = { pipelines = [], projects = [] } }
     in
-    ( model, maybeGetRootData key url (pipelinesUrl flags) token )
+    ( model, maybeGetRootData key url flags token )
 
 
-maybeGetRootData : Key -> Url -> Url -> Maybe Token -> Cmd Msg
-maybeGetRootData key siteUrl endpointUrl maybeToken =
+maybeGetRootData : Key -> Url -> Flags -> Maybe Token -> Cmd Msg
+maybeGetRootData key siteUrl flags maybeToken =
     case maybeToken of
         Nothing ->
             Cmd.none
@@ -46,7 +46,8 @@ maybeGetRootData key siteUrl endpointUrl maybeToken =
             in
             Cmd.batch
                 [ replaceUrl key (Url.toString newUrl)
-                , getUrl token endpointUrl GotPipelines pipelinesDecoder
+                , getUrl token (pipelinesUrl flags) GotPipelines pipelinesDecoder
+                , getUrl token (projectsUrl flags) GotProjects projectsDecoder
                 ]
 
 

@@ -1,10 +1,10 @@
-module Model exposing (Flags, Model, Msg(..), Pipeline, Status(..), Token)
+module Model exposing (Flags, GitlabData, Model, Msg(..), Pipeline, Project, Status(..), Token)
 
 import Browser
 import Browser.Navigation as Nav
 import Http
+import Time exposing (Posix)
 import Url
-
 
 type alias Token =
     String
@@ -48,13 +48,13 @@ type alias Pipeline =
     }
 
 
-type Project
-    = Project
-        { ref : String
-        , id : Int
-        , status : Status
-        , url : String
-        }
+type alias Project =
+    { id : Int
+    , name : String
+    , description: Maybe String
+    , url : String
+    , lastActivity: Posix
+    }
 
 
 type Msg
