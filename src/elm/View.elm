@@ -71,7 +71,7 @@ pipelineItemOf : Pipeline -> Html msg
 pipelineItemOf content =
     li []
         [ a [ href content.url, target "_blank", class <| classFor content.status ]
-            [ small [] [ text <| String.fromInt content.id ++ " " ]
+            [ small [] [ text <| "#" ++ String.fromInt content.id ++ " " ]
             , text content.ref
             , span [ class "emoji" ] [ iconFor content.status |> prepend " " |> text ]
             ]
