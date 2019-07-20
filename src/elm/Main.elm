@@ -82,18 +82,20 @@ update msg model =
             Debug.log "UrlChanged"
                 ( newModel, Cmd.none )
 
-        GotPipelines (Err err) ->
-            Debug.log ("FAILED to get pipelines (" ++ Debug.toString err ++ "). Current model")
-                ( model, Cmd.none )
+        GotPipelines result ->
+            case result of
+                Err err ->
+                    Debug.log ("FAILED to get pipelines (" ++ Debug.toString err ++ "). Current model")
+                        ( model, Cmd.none )
 
-        GotPipelines (Ok values) ->
-            Debug.log ("GOT something " ++ Debug.toString values)
-                ( { model | data = { data | pipelines = values } }, Cmd.none )
+                Ok values ->
+                    Debug.log ("Got pipelines" ++ Debug.toString values)
+                        ( { model | data = { data | pipelines = values } }, Cmd.none )
 
         GotProjects result ->
             case result of
                 Ok projects ->
-                    Debug.log ("GOT projects " ++ Debug.toString projects)
+                    Debug.log ("Got projects " ++ Debug.toString projects)
                         ( { model | data = { data | projects = projects } }, Cmd.none )
 
                 Err err ->
