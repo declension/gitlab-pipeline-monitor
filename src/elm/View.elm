@@ -1,11 +1,14 @@
-module View exposing (..)
+module View exposing (authUrlFor, iconFor, maybeViewOauthLink, pipelineItemOf, toQueryPair, view, viewLink)
+
 import Browser
-import Html exposing (Html, a, h3, li, main_, nav, ol, span, text, ul)
+import Html exposing (Html, a, h3, li, main_, nav, ol, small, span, text, ul)
 import Html.Attributes exposing (class, href, target)
 import Model exposing (Flags, Model, Msg, Pipeline, Status(..))
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder
 import Utils exposing (prepend, relativise)
+
+
 
 -- VIEW
 
@@ -68,7 +71,8 @@ pipelineItemOf : Pipeline -> Html msg
 pipelineItemOf content =
     li []
         [ a [ href content.url, target "_blank" ]
-            [ text content.ref
+            [ small [] [ text <| String.fromInt content.id ++ " " ]
+            , text content.ref
             , span [ class "emoji" ] [ iconFor content.status |> prepend " " |> text ]
             ]
         ]
