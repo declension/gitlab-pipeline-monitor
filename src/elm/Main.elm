@@ -36,14 +36,19 @@ init flags url key =
         token =
             extractToken url
 
-        fullUrl =
-            { emptyHttps
-                | host = flags.gitlabHost
-                , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
-                , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 50 ]
-            }
+        model =
+            { config = flags, key = key, token = token, url = url, pipelines = [] }
     in
-    ( { config = flags, key = key, token = token, url = url, pipelines = [] }, maybeGetRootData key url fullUrl token )
+    ( model, maybeGetRootData key url (pipelinesUrl flags) token )
+
+
+pipelinesUrl : Flags -> Url
+pipelinesUrl flags =
+    { emptyHttps
+        | host = flags.gitlabHost
+        , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
+        , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 30 ]
+    }
 
 
 maybeGetRootData : Key -> Url -> Url -> Maybe Token -> Cmd Msg
@@ -63,7 +68,7 @@ maybeGetRootData key siteUrl endpointUrl maybeToken =
                     { method = "GET"
                     , url = Url.toString endpointUrl
                     , body = emptyBody
-                    , expect = expectJson GotProjects pipelinesDecoder
+                    , expect = expectJson GotPipelines pipelinesDecoder
                     , headers = [ header "Authorization" ("Bearer " ++ token) ]
                     , timeout = Just (10.0 * 1000.0)
                     , tracker = Nothing
@@ -149,11 +154,11 @@ update msg model =
             Debug.log "UrlChanged"
                 ( newModel, Cmd.none )
 
-        GotProjects (Err err) ->
+        GotPipelines (Err err) ->
             Debug.log ("Massive fail (" ++ Debug.toString err ++ "). Current model")
                 ( model, Cmd.none )
 
-        GotProjects (Ok values) ->
+        GotPipelines (Ok values) ->
             Debug.log ("GOT something " ++ Debug.toString values)
                 ( { model | pipelines = values }, Cmd.none )
 

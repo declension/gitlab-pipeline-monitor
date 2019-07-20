@@ -44,5 +44,5 @@ type alias Pipeline =
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | GotProjects (Result Http.Error (List Pipeline))
+    | GotPipelines (Result Http.Error (List Pipeline))
     | UrlChanged Url.Url
