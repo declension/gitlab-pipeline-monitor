@@ -7,13 +7,14 @@ html {
 
 body {
     background-color: hsl(0, 0%, 8%);
-    max-width: 60rem;
+    max-width: 70rem;
     margin: 0 auto;
     min-height: 40rem;
     height: 100%;
 }
 
 main {
+    font-size: 1.25rem;
     padding: 2rem;
 
     pre {
