@@ -91,7 +91,7 @@ maybeViewOauthLink : Model -> List (Html msg)
 maybeViewOauthLink model =
     case model.token of
         Nothing ->
-            [ h3 [] [ a [ href <| Url.toString <| authUrlFor model.config (relativise model.url "/redirect") ] [ text "Authorise in GitLab" ] ] ]
+            [ b [] [ a [ href <| Url.toString <| authUrlFor model.config (relativise model.url "/redirect") ] [ text "Authorise in GitLab" ] ] ]
 
         _ ->
             []
