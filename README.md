@@ -5,7 +5,7 @@ What?
 -----
 A modern, big-screen-friendly UI for monitoring Gitlab Pipelines (CI).
 
-Using the magic of [Elm](https://elm-lang.org/) and the Gitlab v4 API.
+Using the magic of [Elm](https://elm-lang.org/) and the [Gitlab v4 API](https://docs.gitlab.com/ee/api/).
 
 
 Why?
@@ -14,8 +14,10 @@ Why?
 Yes, but, err _this one's different_, etc etc.
 
 ### How so?
-Shush. Erm, WebGL?
+Shush. 
 
+* Oh, it does use a semi-proper Oauth Implicit Flow, so no giving away your hard-earned API tokens.
+* Erm, WebGL? (some day)
 
 How?
 ----
