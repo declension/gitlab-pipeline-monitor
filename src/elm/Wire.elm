@@ -29,7 +29,7 @@ pipelinesUrl flags =
     { emptyHttps
         | host = flags.gitlabHost
         , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
-        , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 30 ]
+        , query = [ Builder.int "per_page" 30 ] |> toQuery |> stripQuestion |> Just
     }
 
 
@@ -38,7 +38,11 @@ projectsUrl flags =
     { emptyHttps
         | host = flags.gitlabHost
         , path = "/api/v4/projects/"
-        , query = Just <| stripQuestion <| toQuery [ Builder.int "per_page" 30 ]
+        , query =
+            [ Builder.int "per_page" 30, Builder.int "archived" 0, Builder.int "membership" 1, Builder.string "order_by" "last_activity_at" ]
+                |> toQuery
+                |> stripQuestion
+                |> Just
     }
 
 
