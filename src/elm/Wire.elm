@@ -3,7 +3,7 @@ module Wire exposing (blankable, emptyHttps, extractToken, getUrl, pipelineDecod
 import Http exposing (emptyBody, expectJson, header)
 import Iso8601
 import Json.Decode as D exposing (Decoder)
-import Model exposing (Flags, Msg(..), Pipeline, Project, Status(..), Token)
+import Model exposing (Flags, Msg(..), Pipeline, Project, ProjectId, Status(..), Token)
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder exposing (toQuery)
 import Url.Parser exposing (parse, query)
@@ -24,22 +24,22 @@ getUrl token url msg decoder =
         }
 
 
-pipelinesUrl : Flags -> Url
-pipelinesUrl flags =
+pipelinesUrl : String -> ProjectId -> Url
+pipelinesUrl host projectId =
     { emptyHttps
-        | host = flags.gitlabHost
-        , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
-        , query = [ Builder.int "per_page" 10 ] |> toQuery |> stripQuestion |> Just
+        | host = host
+        , path = "/api/v4/projects/" ++ String.fromInt projectId ++ "/pipelines"
+        , query = [ Builder.int "per_page" 6 ] |> toQuery |> stripQuestion |> Just
     }
 
 
-projectsUrl : Flags -> Url
-projectsUrl flags =
+projectsUrl : String-> Url
+projectsUrl host =
     { emptyHttps
-        | host = flags.gitlabHost
+        | host = host
         , path = "/api/v4/projects/"
         , query =
-            [ Builder.int "per_page" 30, Builder.int "archived" 0, Builder.int "membership" 1, Builder.string "order_by" "last_activity_at" ]
+            [ Builder.int "per_page" 40, Builder.int "archived" 0, Builder.int "membership" 1, Builder.string "order_by" "last_activity_at" ]
                 |> toQuery
                 |> stripQuestion
                 |> Just

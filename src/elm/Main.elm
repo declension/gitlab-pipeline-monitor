@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Dict
-import Model exposing (Flags, Model, Msg(..), Pipeline, Status(..), Token)
+import Model exposing (Flags, Model, Msg(..), Pipeline, Project, Status(..), Token)
 import Result exposing (Result)
 import Url exposing (Protocol(..), Url)
 import Utils exposing (ifNothing)
@@ -47,8 +47,7 @@ maybeGetRootData key siteUrl flags maybeToken =
             in
             Cmd.batch
                 [ replaceUrl key (Url.toString newUrl)
-                , getUrl token (pipelinesUrl flags) (GotPipelinesFor flags.gitlabProject) pipelinesDecoder
-                , getUrl token (projectsUrl flags) GotProjects projectsDecoder
+                , getUrl token (projectsUrl flags.gitlabHost) GotProjects projectsDecoder
                 ]
 
 
@@ -101,12 +100,28 @@ update msg model =
         GotProjects result ->
             case result of
                 Ok projects ->
+                    let
+                        cmds =
+                            projects
+                                |> List.map (cmdForProject model)
+                                |> Cmd.batch
+                    in
                     Debug.log ("Got projects " ++ Debug.toString projects)
-                        ( { model | data = { data | projects = projects } }, Cmd.none )
+                        ( { model | data = { data | projects = projects } }, cmds )
 
                 Err err ->
                     Debug.log ("FAILED to get projects (" ++ Debug.toString err ++ "). Current model")
                         ( model, Cmd.none )
+
+
+cmdForProject : Model -> Project -> Cmd Msg
+cmdForProject model project =
+    case model.token of
+        Just token ->
+            getUrl token (pipelinesUrl model.config.gitlabHost project.id) (GotPipelinesFor project.id) pipelinesDecoder
+
+        _ ->
+            Cmd.none
 
 
 
