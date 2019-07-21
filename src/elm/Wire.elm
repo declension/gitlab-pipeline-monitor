@@ -29,7 +29,7 @@ pipelinesUrl flags =
     { emptyHttps
         | host = flags.gitlabHost
         , path = "/api/v4/projects/" ++ String.fromInt flags.gitlabProject ++ "/pipelines"
-        , query = [ Builder.int "per_page" 30 ] |> toQuery |> stripQuestion |> Just
+        , query = [ Builder.int "per_page" 10 ] |> toQuery |> stripQuestion |> Just
     }
 
 
