@@ -47,7 +47,7 @@ maybeGetRootData key siteUrl flags maybeToken =
             in
             Cmd.batch
                 [ replaceUrl key (Url.toString newUrl)
-                , getUrl token (pipelinesUrl flags) (GotPipelinesFor 864) pipelinesDecoder
+                , getUrl token (pipelinesUrl flags) (GotPipelinesFor flags.gitlabProject) pipelinesDecoder
                 , getUrl token (projectsUrl flags) GotProjects projectsDecoder
                 ]
 
