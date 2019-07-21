@@ -89,8 +89,9 @@ projectsDecoder =
 
 projectDecoder : Decoder Project
 projectDecoder =
-    D.map5 Project
+    D.map6 Project
         (D.field "id" D.int)
+        (D.at [ "namespace", "full_path" ] D.string)
         (D.field "name" D.string)
         (D.field "description" blankable)
         (D.field "web_url" D.string)

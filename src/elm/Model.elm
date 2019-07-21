@@ -56,6 +56,7 @@ type alias Pipeline =
 
 type alias Project =
     { id : Int
+    , namespace: String
     , name : String
     , description : Maybe String
     , url : String

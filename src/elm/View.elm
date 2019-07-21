@@ -1,10 +1,10 @@
 module View exposing (authUrlFor, iconFor, maybeViewOauthLink, pipelineItemOf, toQueryPair, view, viewLink)
 
 import Browser
-import Dict
-import Html exposing (Html, a, h3, li, main_, nav, ol, small, span, text, ul)
+import Dict exposing (Dict)
+import Html exposing (Html, a, b, div, h3, li, main_, nav, ol, small, span, text, ul)
 import Html.Attributes exposing (class, href, target)
-import Model exposing (Flags, Model, Msg, Pipeline, ProjectId, Status(..))
+import Model exposing (Flags, Model, Msg, Pipeline, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder
 import Utils exposing (prepend, relativise)
@@ -24,17 +24,41 @@ view model =
                 ]
             ]
         , main_ [ class <| "pg-" ++ model.url.path ]
-            ([projectPipelines model 864] ++ maybeViewOauthLink model)
+            (List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
+                ++ maybeViewOauthLink model
+            )
         ]
     }
 
 
-projectPipelines : Model -> ProjectId -> Html Msg
-projectPipelines model projectId =
-    ol [ class "pipelines" ] <|
-        Maybe.withDefault [ h3 [] [ text "No pipelines found..." ] ] <|
-            Maybe.map (List.map pipelineItemOf) <|
-                Dict.get projectId model.data.pipelines
+viewProjectFromPipelinesData : Dict ProjectId (List Pipeline) -> Project -> Html Msg
+viewProjectFromPipelinesData allPipelines project =
+    viewProject (Dict.get project.id allPipelines |> Maybe.withDefault []) project
+
+
+viewProject : List Pipeline -> Project -> Html Msg
+viewProject pipelines project =
+    div [ class "project" ]
+        ([ a [] [ text project.namespace ]
+         , a [ href project.url, target "_blank" ]
+            [ h3 [] [ text project.name ]
+            ]
+         ]
+            ++ maybeDescription project.description
+            ++ [ viewProjectPipelines pipelines ]
+        )
+
+
+maybeDescription : Maybe String -> List (Html Msg)
+maybeDescription maybeDesc =
+    maybeDesc
+        |> Maybe.map (\str -> [ small [] [ text str ] ])
+        |> Maybe.withDefault []
+
+
+viewProjectPipelines : List Pipeline -> Html Msg
+viewProjectPipelines pipelines =
+    ol [ class "pipelines" ] <| List.map pipelineItemOf pipelines
 
 
 authUrlFor : Flags -> Url -> Url
