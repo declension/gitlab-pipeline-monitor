@@ -12,14 +12,14 @@ jobs:
 
       - restore_cache:
           keys:
-            - elm-0.19-node_modules-dependencies-{{ checksum "package.json" }}
+            - elm-0.19-node_modules-dependencies-{{ checksum "yarn.lock" }}
 
       - run: yarn install
 
       - save_cache:
           paths:
             - node_modules
-          key: elm-0.19-node_modules-dependencies-{{ checksum "package.json" }}
+          key: elm-0.19-node_modules-dependencies-{{ checksum "yarn.lock" }}
 
       - persist_to_workspace:
           root: ~/
