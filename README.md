@@ -1,6 +1,8 @@
 Gitlab CI Monitor
 =================
 
+[![CircleCI](https://circleci.com/gh/declension/gitlab-pipeline-monitor.svg?style=svg)](https://circleci.com/gh/declension/gitlab-pipeline-monitor)
+
 What?
 -----
 A modern, big-screen-friendly UI for monitoring Gitlab Pipelines (CI).
