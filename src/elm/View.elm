@@ -18,15 +18,15 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "ARRIVAL RED: CI status"
     , body =
-        [ nav []
+        [ main_ [ class <| "pg-" ++ model.url.path ]
+            (List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
+                ++ maybeViewOauthLink model
+            )
+        , nav []
             [ ul []
                 [ viewLink "/" "all"
                 ]
             ]
-        , main_ [ class <| "pg-" ++ model.url.path ]
-            (List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
-                ++ maybeViewOauthLink model
-            )
         ]
     }
 
