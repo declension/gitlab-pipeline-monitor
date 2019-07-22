@@ -1,4 +1,4 @@
-module View exposing (authUrlFor, iconFor, maybeViewOauthLink, pipelineItemOf, toQueryPair, view, viewLink)
+module View exposing (iconFor, maybeViewOauthLink, pipelineItemOf, view, viewLink)
 
 import Browser
 import Dict exposing (Dict)
@@ -6,8 +6,8 @@ import Html exposing (Html, a, b, div, h3, li, main_, nav, ol, small, span, text
 import Html.Attributes exposing (class, href, target)
 import Model exposing (Flags, Model, Msg, Pipeline, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
-import Url.Builder as Builder
 import Utils exposing (prepend, relativise)
+import Wire exposing (authUrlFor)
 
 
 
@@ -59,32 +59,6 @@ maybeDescription maybeDesc =
 viewProjectPipelines : List Pipeline -> Html Msg
 viewProjectPipelines pipelines =
     ol [ class "pipelines" ] <| List.map pipelineItemOf pipelines
-
-
-authUrlFor : Flags -> Url -> Url
-authUrlFor config currentUrl =
-    { protocol = Https
-    , host = config.gitlabHost
-    , port_ = Nothing
-    , path = Builder.absolute [ "oauth", "authorize" ] []
-    , query =
-        Just <|
-            String.join "&" <|
-                List.map toQueryPair
-                    [ ( "client_id", config.gitlabAppId )
-                    , ( "response_type", "token" )
-
-                    -- TODO: inject state and persist
-                    , ( "state", "1234" )
-                    , ( "redirect_uri", Url.toString currentUrl )
-                    ]
-    , fragment = Nothing
-    }
-
-
-toQueryPair : ( String, String ) -> String
-toQueryPair ( key, value ) =
-    Url.percentEncode key ++ "=" ++ Url.percentEncode value
 
 
 maybeViewOauthLink : Model -> List (Html msg)

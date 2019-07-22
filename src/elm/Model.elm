@@ -65,7 +65,9 @@ type alias Project =
 
 
 type Msg
-    = LinkClicked Browser.UrlRequest
+    =
+    Tick Posix
+    | LinkClicked Browser.UrlRequest
     | GotPipelinesFor ProjectId (Result Http.Error (List Pipeline))
     | GotProjects (Result Http.Error (List Project))
     | UrlChanged Url.Url

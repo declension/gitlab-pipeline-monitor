@@ -1,4 +1,4 @@
-module Wire exposing (blankable, emptyHttps, extractToken, getUrl, pipelineDecoder, pipelinesDecoder, pipelinesUrl, projectDecoder, projectsDecoder, projectsUrl, statusDecoder, toToken)
+module Wire exposing (authUrlFor, blankable, emptyHttps, extractToken, getUrl, pipelineDecoder, pipelinesDecoder, pipelinesUrl, projectDecoder, projectsDecoder, projectsUrl, statusDecoder, toQueryPair, toToken)
 
 import Http exposing (emptyBody, expectJson, header)
 import Iso8601
@@ -33,7 +33,7 @@ pipelinesUrl host projectId =
     }
 
 
-projectsUrl : String-> Url
+projectsUrl : String -> Url
 projectsUrl host =
     { emptyHttps
         | host = host
@@ -125,3 +125,29 @@ extractToken url =
 toToken : Query.Parser (Maybe Token)
 toToken =
     Query.string "access_token"
+
+
+authUrlFor : Flags -> Url -> Url
+authUrlFor config currentUrl =
+    { protocol = Https
+    , host = config.gitlabHost
+    , port_ = Nothing
+    , path = Builder.absolute [ "oauth", "authorize" ] []
+    , query =
+        Just <|
+            String.join "&" <|
+                List.map toQueryPair
+                    [ ( "client_id", config.gitlabAppId )
+                    , ( "response_type", "token" )
+
+                    -- TODO: inject state and persist
+                    , ( "state", "1234" )
+                    , ( "redirect_uri", Url.toString currentUrl )
+                    ]
+    , fragment = Nothing
+    }
+
+
+toQueryPair : ( String, String ) -> String
+toQueryPair ( key, value ) =
+    Url.percentEncode key ++ "=" ++ Url.percentEncode value
