@@ -16,7 +16,7 @@ import Wire exposing (authUrlFor)
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Gilab Pipelines status"
+    { title = "Gitlab Pipelines status"
     , body =
         [ main_ [ class <| "pg-" ++ model.url.path ]
             (List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
