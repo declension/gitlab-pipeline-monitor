@@ -71,15 +71,24 @@ statusDecoder =
         conv val =
             case val of
                 "success" ->
-                    Success
+                    D.succeed Success
 
                 "failed" ->
-                    Failed
+                    D.succeed Failed
+
+                "pending" ->
+                    D.succeed Pending
+
+                "running" ->
+                    D.succeed Running
+
+                "canceled" ->
+                    D.succeed Cancelled
 
                 _ ->
-                    Unknown
+                    D.fail "Unknown status"
     in
-    D.string |> D.map conv
+    D.string |> D.andThen conv
 
 
 projectsDecoder : Decoder (List Project)

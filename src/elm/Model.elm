@@ -39,11 +39,11 @@ type alias Flags =
 
 
 type Status
-    = Success
+    = Running
+    | Success
     | Failed
     | Pending
     | Cancelled
-    | Unknown
 
 
 type alias Pipeline =
