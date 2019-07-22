@@ -52,7 +52,7 @@ viewProject pipelines project =
 maybeDescription : Maybe String -> List (Html Msg)
 maybeDescription maybeDesc =
     maybeDesc
-        |> Maybe.map (\str -> [ small [] [ text str ] ])
+        |> Maybe.map (\str -> [ div [ class "description" ] [ text str ] ])
         |> Maybe.withDefault []
 
 
