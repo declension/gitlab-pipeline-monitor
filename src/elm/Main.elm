@@ -5,6 +5,7 @@ import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Dict
 import Model exposing (Flags, Model, Msg(..), Pipeline, Project, Status(..), Token)
 import Result exposing (Result)
+import Time
 import Url exposing (Protocol(..), Url)
 import Utils exposing (ifNothing)
 import View exposing (view)
@@ -62,6 +63,14 @@ update msg model =
             model.data
     in
     case msg of
+        Tick t ->
+            case model.token of
+                Just token ->
+                    ( model, getUrl token (projectsUrl model.config.gitlabHost) GotProjects projectsDecoder )
+
+                _ ->
+                    ( model, Cmd.none )
+
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -130,4 +139,4 @@ cmdForProject model project =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Time.every (10 * 1000) Tick
