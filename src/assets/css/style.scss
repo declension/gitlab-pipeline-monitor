@@ -74,6 +74,8 @@ span.emoji {
 }
 
 div.project {
+    transition: all 2s;
+
     padding: 0.75rem;
     flex-grow: 1;
     max-width: 30rem;
@@ -100,18 +102,32 @@ div.project {
     }
 
     .description {
+        color: hsl(0, 0%, 75%);
         font-size: 0.8rem;
         opacity: 0.75;
-        color: hsl(0, 0%, 75%);
         height: 1.1rem;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
     }
+
+    .empty {
+        font-family: serif;
+        color: hsl(0, 0%, 30%);
+        font-size: 16rem;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: inherit;
+        flex-grow: 1;
+        size: inherit;
+        vertical-align: center;
+        text-align: center;
+        opacity: 0.06;
+        padding: 2rem 1rem 0;
+    }
 }
 
 ol.pipelines {
-    font-size: 0.9rem;
     list-style: none;
     padding: 0;
 

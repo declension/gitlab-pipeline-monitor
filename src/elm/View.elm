@@ -58,7 +58,11 @@ maybeDescription maybeDesc =
 
 viewProjectPipelines : List Pipeline -> Html Msg
 viewProjectPipelines pipelines =
-    ol [ class "pipelines" ] <| List.map pipelineItemOf pipelines
+    if List.isEmpty pipelines then
+        div [class "empty"] [text "😴"]
+
+    else
+        ol [ class "pipelines" ] <| List.map pipelineItemOf pipelines
 
 
 maybeViewOauthLink : Model -> List (Html msg)
@@ -89,6 +93,9 @@ classFor status =
 
         Failed ->
             "failed"
+
+        Running ->
+            "running"
 
         _ ->
             ""
