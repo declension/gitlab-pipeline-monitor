@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Dict
-import Model exposing (Flags, Model, Msg(..), Pipeline, Project, Status(..), Token)
+import Model exposing (Flags, Host, Model, Msg(..), Pipeline, Project, Status(..), Token)
 import Result exposing (Result)
 import Time
 import Url exposing (Protocol(..), Url)
@@ -32,11 +32,11 @@ init flags url key =
         model =
             { config = flags, key = key, token = token, url = url, data = { pipelines = Dict.empty, projects = [] } }
     in
-    ( model, maybeGetRootData key url flags token )
+    ( model, maybeGetRootData key url flags.gitlabHost token )
 
 
-maybeGetRootData : Key -> Url -> Flags -> Maybe Token -> Cmd Msg
-maybeGetRootData key siteUrl flags maybeToken =
+maybeGetRootData : Key -> Url -> Host -> Maybe Token -> Cmd Msg
+maybeGetRootData key siteUrl host maybeToken =
     case maybeToken of
         Nothing ->
             Cmd.none
@@ -48,7 +48,7 @@ maybeGetRootData key siteUrl flags maybeToken =
             in
             Cmd.batch
                 [ replaceUrl key (Url.toString newUrl)
-                , getUrl token (projectsUrl flags.gitlabHost) GotProjects projectsDecoder
+                , getUrl token (projectsUrl host) GotProjects projectsDecoder
                 ]
 
 

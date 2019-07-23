@@ -3,7 +3,7 @@ module Wire exposing (authUrlFor, blankable, emptyHttps, extractToken, getUrl, p
 import Http exposing (emptyBody, expectJson, header)
 import Iso8601
 import Json.Decode as D exposing (Decoder)
-import Model exposing (Flags, Msg(..), Pipeline, Project, ProjectId, Status(..), Token)
+import Model exposing (Flags, Host, Msg(..), Pipeline, Project, ProjectId, Status(..), Token)
 import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder exposing (toQuery)
 import Url.Parser exposing (parse, query)
@@ -33,7 +33,7 @@ pipelinesUrl host projectId =
     }
 
 
-projectsUrl : String -> Url
+projectsUrl : Host -> Url
 projectsUrl host =
     { emptyHttps
         | host = host

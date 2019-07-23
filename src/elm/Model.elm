@@ -30,9 +30,10 @@ type alias GitlabData =
     , pipelines : Dict ProjectId (List Pipeline)
     }
 
+type alias Host = String
 
 type alias Flags =
-    { gitlabHost : String
+    { gitlabHost : Host
     , gitlabProject : Int
     , gitlabAppId : String
     }
