@@ -34,7 +34,6 @@ type alias Host = String
 
 type alias Flags =
     { gitlabHost : Host
-    , gitlabProject : Int
     , gitlabAppId : String
     }
 
