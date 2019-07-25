@@ -1,5 +1,6 @@
 module Wire exposing (authUrlFor, blankable, emptyHttps, extractToken, getUrl, pipelineDecoder, pipelinesDecoder, pipelinesUrl, projectDecoder, projectsDecoder, projectsUrl, statusDecoder, toQueryPair, toToken)
 
+import Config exposing (httpTimeout, maxPipelinesPerProject, maxProjects)
 import Http exposing (emptyBody, expectJson, header)
 import Iso8601
 import Json.Decode as D exposing (Decoder)
@@ -8,7 +9,7 @@ import Url exposing (Protocol(..), Url)
 import Url.Builder as Builder exposing (toQuery)
 import Url.Parser exposing (parse, query)
 import Url.Parser.Query as Query
-import Utils exposing (prepend, stripQuestion)
+import Utils exposing (stripQuestion)
 
 
 getUrl : Token -> Url -> (Result Http.Error a -> Msg) -> Decoder a -> Cmd Msg
@@ -19,7 +20,7 @@ getUrl token url msg decoder =
         , body = emptyBody
         , expect = expectJson msg decoder
         , headers = [ header "Authorization" ("Bearer " ++ token) ]
-        , timeout = Just (10.0 * 1000.0)
+        , timeout = Just (httpTimeout * 1000.0)
         , tracker = Nothing
         }
 
@@ -29,7 +30,7 @@ pipelinesUrl host projectId =
     { emptyHttps
         | host = host
         , path = "/api/v4/projects/" ++ String.fromInt projectId ++ "/pipelines"
-        , query = [ Builder.int "per_page" 6 ] |> toQuery |> stripQuestion |> Just
+        , query = [ Builder.int "per_page" maxPipelinesPerProject, Builder.string "order_by" "id", Builder.string "sort" "desc"] |> toQuery |> stripQuestion |> Just
     }
 
 
@@ -39,7 +40,7 @@ projectsUrl host =
         | host = host
         , path = "/api/v4/projects/"
         , query =
-            [ Builder.int "per_page" 40, Builder.int "archived" 0, Builder.int "membership" 1, Builder.string "order_by" "last_activity_at" ]
+            [ Builder.int "per_page" maxProjects, Builder.int "archived" 0, Builder.int "membership" 1, Builder.string "order_by" "last_activity_at" ]
                 |> toQuery
                 |> stripQuestion
                 |> Just
@@ -125,7 +126,7 @@ blankable =
 extractToken : Url -> Maybe Token
 extractToken url =
     url.fragment
-        |> Maybe.map (prepend "http://DUMMY?")
+        |> Maybe.map (String.append "http://DUMMY?")
         |> Maybe.andThen Url.fromString
         |> Maybe.andThen (parse (query toToken))
         |> Maybe.withDefault Nothing

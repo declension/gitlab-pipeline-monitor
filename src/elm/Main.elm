@@ -39,6 +39,7 @@ maybeGetRootData : Key -> Url -> Host -> Maybe Token -> Cmd Msg
 maybeGetRootData key siteUrl host maybeToken =
     case maybeToken of
         Nothing ->
+            Debug.log "No token found!"
             Cmd.none
 
         Just token ->
