@@ -106,10 +106,19 @@ viewProjectPipelines pipelineGroups =
             others =
                 Dict.remove "master" pipelineGroups
         in
-        div [ class "pipeline-groups" ]
+        ol [ class "pipeline-groups" ]
             (viewPipelineGroup ( "master", masterGroup )
-                :: (others |> Dict.toList |> List.take maxNonDefaultBranches |> List.map viewPipelineGroup)
+                :: (others |> Dict.toList |> List.sortWith latestIdComparer |> List.take maxNonDefaultBranches |> List.map viewPipelineGroup)
             )
+
+
+latestIdComparer : ( a, List { b | id : Int } ) -> ( a, List { b | id : Int } ) -> Order
+latestIdComparer ( _, leftBuilds ) ( _, rightBuilds ) =
+    let
+        getLatestId =
+            List.map .id >> List.maximum >> Maybe.withDefault 0
+    in
+    compare (getLatestId rightBuilds) (getLatestId leftBuilds)
 
 
 maybeViewOauthLink : Model -> List (Html msg)
@@ -124,13 +133,11 @@ maybeViewOauthLink model =
 
 viewPipelineGroup : ( GitRef, List Pipeline ) -> Html msg
 viewPipelineGroup ( gitRef, pipelines ) =
-    ol []
-        [ li [ classList [ ( "master", gitRef == "master" ), ( "group", True ) ] ]
-            [ a [ href "#", target "_blank" ]
-                [ text gitRef ]
-            , div [ class "pipelines" ]
-                (pipelines |> List.reverse |> List.take maxBuildsPerBranch |> List.map pipelineButtonOf)
-            ]
+    li [ classList [ ( "master", gitRef == "master" ), ( "group", True ) ] ]
+        [ a [ href "#", target "_blank" ]
+            [ text gitRef ]
+        , div [ class "pipelines" ]
+            (pipelines |> List.reverse |> List.take maxBuildsPerBranch |> List.map pipelineButtonOf)
         ]
 
 

@@ -158,15 +158,14 @@ div.project {
     }
 }
 
-.pipeline-groups ol {
+ol.pipeline-groups {
     list-style: none;
     padding: 0;
+    font-size: 0.9rem;
+    color: $lightGrey;
+    opacity: 0.95;
 
     .group {
-        font-size: 0.95rem;
-        text-decoration: none;
-        opacity: 0.9;
-
         display: block;
         //background: hsla(0, 0%, 15%, 0.8);
         overflow: hidden;
@@ -242,6 +241,7 @@ div.project {
 
     .master.failed {
         background-color: hsl(5, 80%, 20%);
+        animation: blinker 0.85s ease-out infinite alternate;
     }
 
     .master.success {
