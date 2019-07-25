@@ -8,7 +8,7 @@ maxNonDefaultBranches =
 maxPipelinesPerProject =
     20
 
-maxBuildsPerBranch = 4
+maxBuildsPerBranch = 5
 
 maxProjects =
     20
