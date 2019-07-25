@@ -1,3 +1,4 @@
+$madShadow: 0.25rem 0.25rem 0.25rem hsla(0, 40%, 25%, 0.95), -0.25rem -0.25rem 0.25rem hsla(0, 40%, 25%, 0.95);
 html {
     font-family: Roboto, sans-serif;
     background-color: black;
@@ -67,11 +68,12 @@ a:visited {
 }
 
 
-span.emoji {
+.emoji {
     font-family: serif;
-    opacity: 0.85;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+    padding: 0.25rem;
 }
+
 
 div.project {
     transition: all 2s;
@@ -127,32 +129,76 @@ div.project {
     }
 }
 
-ol.pipelines {
+.pipeline-groups ol {
     list-style: none;
     padding: 0;
 
-    a {
+    .group {
         font-size: 0.95rem;
         text-decoration: none;
         opacity: 0.9;
 
         display: block;
         //background: hsla(0, 0%, 15%, 0.8);
-        height: 2rem;
+        height: 4rem;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
         padding: 0.5rem 0.5rem 0;
         border: 2px solid hsla(0, 0%, 18%, 0.6);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         border-radius: 0.5rem;
     }
 
-    .failed {
+    .pipelines {
+        display: flex;
+
+        a.pipeline {
+            display: block;
+            padding: 0.5rem;
+            border: 2px solid hsla(0, 0%, 18%, 0.8);
+            border-radius: 1rem;
+            opacity: 0.9;
+            margin-right: 0.5rem;
+        }
+
+        a:hover {
+            border: 2px solid hsla(0, 0%, 18%, 1.0);
+            opacity: 1.0;
+            box-shadow: 0.2rem 0.25rem 0.25rem hsla(0, 30%, 30%, 1.0), -0.2rem -0.25rem 0.25rem hsla(0, 30%, 30%, 1.0);
+            transition-duration: 0.5s;
+        }
+
+        .running {
+            animation: blinker 1.0s ease-out infinite alternate;
+            transition-duration: 0.5s;
+            opacity: 0.1;
+        }
+
+        @keyframes blinker {
+            to {
+                box-shadow: $madShadow;
+                opacity: 1.0;
+            }
+        }
+
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+
+    .master {
+        height: 5rem;
+        background: hsl(0, 0%, 17.5%);
+    }
+
+
+    .master.failed {
         background-color: hsl(5, 80%, 20%);
     }
 
-    .success {
+    .master.success {
         background-color: hsl(125, 55%, 17.5%);
     }
 

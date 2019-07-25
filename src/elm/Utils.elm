@@ -6,7 +6,7 @@ import Url exposing (Url)
 {-| Like String.append, but adds to the front. Useful when you don't have `flip`...
 -}
 prepend : String -> String -> String
-prepend prefix str =
+prepend str prefix =
     prefix ++ str
 
 

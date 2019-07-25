@@ -1,4 +1,4 @@
-module Model exposing (..)
+module Model exposing (Flags, GitRef, GitlabData, Host, Model, Msg(..), Pipeline, PipelineStore, Project, ProjectId, Status(..), Token)
 
 import Browser
 import Browser.Navigation as Nav
@@ -25,12 +25,23 @@ type alias ProjectId =
     Int
 
 
+type alias GitRef =
+    String
+
+
+type alias PipelineStore =
+    Dict ProjectId (Dict GitRef (List Pipeline))
+
+
 type alias GitlabData =
     { projects : List Project
     , pipelines : Dict ProjectId (List Pipeline)
     }
 
-type alias Host = String
+
+type alias Host =
+    String
+
 
 type alias Flags =
     { gitlabHost : Host
@@ -56,7 +67,7 @@ type alias Pipeline =
 
 type alias Project =
     { id : Int
-    , namespace: String
+    , namespace : String
     , name : String
     , description : Maybe String
     , url : String
@@ -65,8 +76,7 @@ type alias Project =
 
 
 type Msg
-    =
-    Tick Posix
+    = Tick Posix
     | LinkClicked Browser.UrlRequest
     | GotPipelinesFor ProjectId (Result Http.Error (List Pipeline))
     | GotProjects (Result Http.Error (List Project))
