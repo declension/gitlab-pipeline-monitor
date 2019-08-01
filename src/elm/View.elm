@@ -101,7 +101,7 @@ viewProjectPipelines pipelineGroups =
     else
         let
             masterGroup =
-                Dict.get "master" pipelineGroups |> Maybe.map (List.take maxBuildsPerBranch) |> Maybe.withDefault []
+                Dict.get "master" pipelineGroups |> Maybe.withDefault []
 
             others =
                 Dict.remove "master" pipelineGroups
