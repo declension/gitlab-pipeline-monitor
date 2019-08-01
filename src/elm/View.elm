@@ -3,7 +3,7 @@ module View exposing (iconFor, maybeViewOauthLink, pipelineItemOf, view, viewLin
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, h2, li, main_, nav, ol, small, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, li, main_, nav, ol, small, span, text, ul)
 import Html.Attributes exposing (class, classList, href, id, target)
 import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
@@ -24,8 +24,8 @@ view model =
             [ ul []
                 [ viewLink "/" "all projects"
                 ]
-            , div [] [ text "© 2019. ", a [ href "https://github.com/declension/" ] [ text "On GitHub" ] ]
             ]
+        , footer [] [ div [] [ text "© 2019. ", a [ href "https://github.com/declension/" ] [ text "On GitHub" ] ] ]
         ]
     }
 
