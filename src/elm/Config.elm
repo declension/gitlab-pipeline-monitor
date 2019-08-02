@@ -8,10 +8,10 @@ maxNonDefaultBranches =
 maxPipelinesPerProject =
     20
 
-maxBuildsPerBranch = 5
+maxBuildsPerBranch = 4
 
 maxProjects =
-    20
+    16
 
 
 httpTimeout =
