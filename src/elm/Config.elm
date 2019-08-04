@@ -1,17 +1,20 @@
-module Config exposing (maxNonDefaultBranches, maxPipelinesPerProject, maxProjects, httpTimeout, maxBuildsPerBranch)
+module Config exposing (httpTimeout, maxBuildsPerBranch, maxNonDefaultBranches, maxPipelinesPerProject, maxProjects)
 
 
 maxNonDefaultBranches =
-    3
+    2
 
 
 maxPipelinesPerProject =
-    20
+    24
 
-maxBuildsPerBranch = 4
+
+maxBuildsPerBranch =
+    4
+
 
 maxProjects =
-    16
+    12
 
 
 httpTimeout =
