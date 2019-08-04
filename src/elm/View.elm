@@ -3,7 +3,7 @@ module View exposing (iconFor, maybeViewOauthLink, pipelineItemOf, view, viewLin
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, footer, h2, li, main_, nav, ol, small, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, h3, li, main_, nav, ol, span, text, ul)
 import Html.Attributes exposing (class, classList, href, id, target)
 import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
@@ -134,8 +134,10 @@ maybeViewOauthLink model =
 viewPipelineGroup : ( GitRef, List Pipeline ) -> Html msg
 viewPipelineGroup ( gitRef, pipelines ) =
     li [ classList [ ( "master", gitRef == "master" ), ( "group", True ) ] ]
-        [ a [ href "#", target "_blank" ]
-            [ text gitRef ]
+        [ h3 []
+            [ a [ href "#", target "_blank" ]
+                [ text gitRef ]
+            ]
         , div [ class "pipelines" ]
             (pipelines |> List.reverse |> List.take maxBuildsPerBranch |> List.map pipelineButtonOf)
         ]

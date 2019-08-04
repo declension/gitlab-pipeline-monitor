@@ -112,6 +112,12 @@ h2 {
     white-space: nowrap;
     overflow: hidden;
 }
+h3 {
+    font-weight: 300;
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
+    margin-top: 0.2rem;
+}
 
 #full-screen {
     margin: 10rem auto;
@@ -126,7 +132,6 @@ div.project {
     flex-grow: 1;
     max-width: 28rem;
     min-width: 12rem;
-    min-height: 12rem;
     border: solid 2px hsl(0, 0%, 14%);
     background: linear-gradient(-20deg, hsl(0, 0%, 5%), hsl(0, 0%, 17.5%));
     margin: 0 1rem 1rem 0;
@@ -151,13 +156,13 @@ div.project {
         overflow: hidden;
         white-space: nowrap;
         /* TODO: better limiting */
-        max-width: 24rem;
+        max-width: 20rem;
     }
 
     .empty {
         font-family: serif;
         color: hsl(0, 0%, 30%);
-        font-size: 15rem;
+        font-size: 13rem;
         white-space: nowrap;
         overflow: hidden;
         transition: inherit;
@@ -166,7 +171,7 @@ div.project {
         vertical-align: center;
         text-align: center;
         opacity: 0.06;
-        padding: 2.5rem 0rem 0;
+        padding: 1.5rem 0 0;
     }
 }
 
@@ -176,9 +181,11 @@ ol.pipeline-groups {
     font-size: 0.9rem;
     color: $lightGrey;
     opacity: 0.95;
+    margin-bottom: 0;
 
     .group {
         display: block;
+        min-height: 3.5rem;
         //background: hsla(0, 0%, 15%, 0.8);
         overflow: hidden;
         white-space: nowrap;
@@ -187,10 +194,15 @@ ol.pipeline-groups {
         border: 2px solid hsla(0, 0%, 15%, 0.85);
         margin-bottom: 0.5rem;
         border-radius: 0.5rem;
+
+        a {
+            font-family: "Roboto Mono", monospace;
+        }
     }
 
     .pipelines {
         display: flex;
+        overflow: hidden;
 
         a.pipeline {
             display: flex;
@@ -210,7 +222,7 @@ ol.pipeline-groups {
             }
             .emoji {
                 opacity: 0.85;
-                font-size: 1.4rem;
+                font-size: 1.2rem;
             }
         }
 
@@ -255,7 +267,7 @@ ol.pipeline-groups {
 
     .master {
         background: hsl(0, 0%, 17.5%);
-        margin-bottom: 1.25rem;
+        min-height: 4rem;
     }
 
 
