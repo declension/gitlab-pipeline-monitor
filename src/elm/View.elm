@@ -1,4 +1,4 @@
-module View exposing (iconFor, maybeViewOauthLink, pipelineItemOf, view, viewLink)
+module View exposing (iconFor, maybeViewOauthLink, view, viewLink)
 
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
@@ -7,7 +7,7 @@ import Html exposing (Html, a, div, footer, h2, h3, li, main_, nav, ol, span, te
 import Html.Attributes exposing (class, classList, href, id, target)
 import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
-import Utils exposing (prepend, relativise)
+import Utils exposing (relativise)
 import Wire exposing (authUrlFor)
 
 
@@ -146,17 +146,8 @@ viewPipelineGroup ( gitRef, pipelines ) =
 pipelineButtonOf : Pipeline -> Html msg
 pipelineButtonOf content =
     a [ class "pipeline", href content.url, target "_blank", class <| classFor content.status ]
-        [ span [ class "emoji" ] [ text <| iconFor content.status ], span [ class "small" ] [ content.id |> String.fromInt |> text ] ]
-
-
-pipelineItemOf : Pipeline -> Html msg
-pipelineItemOf content =
-    li []
-        [ a [ href content.url, target "_blank", class <| classFor content.status ]
-            [ small [] [ text <| "#" ++ String.fromInt content.id ++ " " ]
-            , text content.ref
-            , span [ class "emoji" ] [ iconFor content.status |> prepend " " |> text ]
-            ]
+        [ span [ class "emoji" ] [ text <| iconFor content.status ]
+        , span [ class "small" ] [ content.id |> String.fromInt |> text ]
         ]
 
 
