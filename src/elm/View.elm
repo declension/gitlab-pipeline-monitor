@@ -1,18 +1,14 @@
-module View exposing (iconFor, maybeViewOauthLink, view, viewLink)
+module View exposing (iconFor, maybeViewOauthLink, view)
 
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, footer, h2, h3, li, main_, nav, ol, span, text, ul)
-import Html.Attributes exposing (class, classList, href, id, target)
+import Html exposing (Html, a, div, footer, h2, h3, img, li, main_, ol, span, text)
+import Html.Attributes exposing (class, classList, href, id, src, target)
 import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
 import Utils exposing (relativise)
 import Wire exposing (authUrlFor)
-
-
-
--- VIEW
 
 
 view : Model -> Browser.Document msg
@@ -49,28 +45,18 @@ viewProjects model =
     List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
 
 
-viewProjectFromPipelinesData : Dict ProjectId (List Pipeline) -> Project -> Html msg
+viewProjectFromPipelinesData : PipelineStore -> Project -> Html msg
 viewProjectFromPipelinesData allPipelines project =
     let
+        innerValues _ =
+            Dict.values
+
         pipelinesByGitRef =
-            Dict.get project.id allPipelines |> Maybe.map byGitRef |> Maybe.withDefault Dict.empty
+            Dict.get project.id allPipelines
+                |> Maybe.map (Dict.map innerValues)
+                |> Maybe.withDefault Dict.empty
     in
     viewProject pipelinesByGitRef project
-
-
-byGitRef : List Pipeline -> Dict GitRef (List Pipeline)
-byGitRef pipelines =
-    pipelines |> List.map (\p -> ( p.ref, p )) |> List.foldl addItem Dict.empty
-
-
-addItem : ( GitRef, Pipeline ) -> Dict GitRef (List Pipeline) -> Dict GitRef (List Pipeline)
-addItem ( gitRef, pipeline ) cur =
-    Dict.update gitRef (appendItem pipeline) cur
-
-
-appendItem : a -> Maybe (List a) -> Maybe (List a)
-appendItem item maybeExistingList =
-    maybeExistingList |> Maybe.map (\existing -> Just (item :: existing)) |> Maybe.withDefault (Just [ item ])
 
 
 viewProject : Dict GitRef (List Pipeline) -> Project -> Html msg
@@ -146,9 +132,18 @@ viewPipelineGroup ( gitRef, pipelines ) =
 pipelineButtonOf : Pipeline -> Html msg
 pipelineButtonOf content =
     a [ class "pipeline", href content.url, target "_blank", class <| classFor content.status ]
-        [ span [ class "emoji" ] [ text <| iconFor content.status ]
-        , span [ class "small" ] [ content.id |> String.fromInt |> text ]
-        ]
+        ([ span [ class "emoji" ] [ text <| iconFor content.status ]
+         , span [ class "small" ] [ content.id |> String.fromInt |> text ]
+         ]
+            ++ detail content
+        )
+
+
+detail : Pipeline -> List (Html msg)
+detail pipeline =
+    pipeline.detail
+        |> Maybe.map (\d -> [ img [ class "avatar", src (Maybe.withDefault "" d.user.avatarUrl) ] [ text d.user.name ] ])
+        |> Maybe.withDefault []
 
 
 classFor status =
@@ -182,12 +177,3 @@ iconFor status =
 
         Pending ->
             "😴"
-
-
-
---            "😶"
-
-
-viewLink : String -> String -> Html msg
-viewLink path name =
-    li [] [ a [ href path ] [ text name ] ]

@@ -39,7 +39,7 @@ main {
     transition: 3s ease-out opacity;
 
     font-size: 1.1rem;
-    padding: 1rem;
+    padding: 0.5rem 0 0 0.5rem;
 
     pre {
         opacity: 0.35;
@@ -130,11 +130,11 @@ div.project {
 
     padding: 0.75rem 0.75rem 0 0.75rem;
     flex-grow: 1;
-    max-width: 28rem;
+    max-width: 25rem;
     min-width: 12rem;
-    border: solid 2px hsl(0, 0%, 14%);
+    border: solid 2px hsl(0, 0%, 12%);
     background: linear-gradient(-20deg, hsl(0, 0%, 5%), hsl(0, 0%, 17.5%));
-    margin: 0 1rem 1rem 0;
+    margin: 0 0.5rem 0.5rem 0;
     border-radius: 0.25rem;
 
 
@@ -156,7 +156,7 @@ div.project {
         overflow: hidden;
         white-space: nowrap;
         /* TODO: better limiting */
-        max-width: 20rem;
+        max-width: 24rem;
     }
 
     .empty {
@@ -214,7 +214,11 @@ ol.pipeline-groups {
             opacity: 0.96;
             margin: 0.1rem 0.5rem 0.1rem 0;
             transition-duration: 0.75s;
-
+            img.avatar {
+                width: 1.5rem;
+                padding: 0 0.25rem;
+                border-radius: 0.5rem;
+            }
             .small {
                 font-size: 0.75rem;
                 font-family: "Roboto Mono", monospace;

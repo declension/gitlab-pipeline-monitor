@@ -2,14 +2,14 @@ module Main exposing (main)
 
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav exposing (Key, replaceUrl)
-import Dict
-import Model exposing (Flags, Host, Model, Msg(..), Pipeline, Project, Status(..), Token)
+import Dict exposing (Dict)
+import Model exposing (Flags, GitRef, Host, Model, Msg(..), Pipeline, PipelineId, Project, ProjectId, Status(..), Token)
 import Result exposing (Result)
 import Time
 import Url exposing (Protocol(..), Url)
 import Utils exposing (ifNothing)
 import View exposing (view)
-import Wire exposing (extractToken, getUrl, pipelinesDecoder, pipelinesUrl, projectsDecoder, projectsUrl)
+import Wire exposing (extractToken, getUrl, pipelineDetailDecoder, pipelineDetailUrl, pipelinesDecoder, pipelinesUrl, projectsDecoder, projectsUrl)
 
 
 main =
@@ -40,7 +40,7 @@ maybeGetRootData key siteUrl host maybeToken =
     case maybeToken of
         Nothing ->
             Debug.log "No token found!"
-            Cmd.none
+                Cmd.none
 
         Just token ->
             let
@@ -64,7 +64,7 @@ update msg model =
             model.data
     in
     case msg of
-        Tick t ->
+        FetchProjects _ ->
             case model.token of
                 Just token ->
                     ( model, getUrl token (projectsUrl model.config.gitlabHost) GotProjects projectsDecoder )
@@ -99,13 +99,15 @@ update msg model =
                     Debug.log ("FAILED to get pipelines (" ++ Debug.toString err ++ "). Current model")
                         ( model, Cmd.none )
 
-                Ok values ->
+                Ok pipelines ->
                     let
                         newPipelines =
-                            Dict.insert projectId values data.pipelines
+                            Dict.update projectId (modifyProject pipelines) data.pipelines
+
+                        cmds =
+                            pipelines |> List.map (cmdForPipelineDetail model projectId) |> Cmd.batch
                     in
-                    Debug.log ("Got pipelines" ++ Debug.toString values)
-                        ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
+                    ( { model | data = { data | pipelines = newPipelines } }, cmds )
 
         GotProjects result ->
             case result of
@@ -113,7 +115,7 @@ update msg model =
                     let
                         cmds =
                             projects
-                                |> List.map (cmdForProject model)
+                                |> List.map (.id >> cmdForProject model)
                                 |> Cmd.batch
                     in
                     Debug.log ("Got projects " ++ Debug.toString projects)
@@ -123,12 +125,86 @@ update msg model =
                     Debug.log ("FAILED to get projects (" ++ Debug.toString err ++ "). Current model")
                         ( model, Cmd.none )
 
+        GotPipelineDetailFor projectId gitRef result ->
+            case result of
+                Ok pipelineDetail ->
+                    let
+                        updateDetail =
+                            Maybe.map (\pipeline -> { pipeline | detail = Just pipelineDetail })
 
-cmdForProject : Model -> Project -> Cmd Msg
-cmdForProject model project =
+                        updateGroup =
+                            Maybe.map (Dict.update pipelineDetail.id updateDetail)
+
+                        updateProject =
+                            Maybe.map (Dict.update gitRef updateGroup)
+
+                        newPipelines =
+                            model.data.pipelines
+                                |> Dict.update projectId updateProject
+                    in
+                    Debug.log ("GOT pipeline detail: " ++ Debug.toString pipelineDetail)
+                        ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
+
+                Err err ->
+                    Debug.log ("FAILED getting pipeline detail:" ++ Debug.toString err) ( model, Cmd.none )
+
+
+modifyProject : List Pipeline -> Maybe (Dict GitRef (Dict PipelineId Pipeline)) -> Maybe (Dict GitRef (Dict PipelineId Pipeline))
+modifyProject pipelines existing =
+    case existing of
+        Just d ->
+            updatePipelines d pipelines |> Just
+
+        Nothing ->
+            updatePipelines Dict.empty pipelines |> Just
+
+
+const : Pipeline -> Maybe Pipeline -> Maybe Pipeline
+const pipeline existing =
+    case existing of
+        Just old ->
+            case old.detail of
+                -- Don't update if we have detail
+                Just _ ->
+                    existing
+
+                Nothing ->
+                    Just pipeline
+
+        Nothing ->
+            Just pipeline
+
+
+updateGroupFor : Pipeline -> Maybe (Dict PipelineId Pipeline) -> Maybe (Dict PipelineId Pipeline)
+updateGroupFor pipeline existing =
+    case existing of
+        Just old ->
+            Dict.update pipeline.id (const pipeline) old |> Just
+
+        Nothing ->
+            Dict.fromList [ ( pipeline.id, pipeline ) ] |> Just
+
+
+updatePipelines : Dict GitRef (Dict PipelineId Pipeline) -> List Pipeline -> Dict GitRef (Dict PipelineId Pipeline)
+updatePipelines projectPipelines pipelines =
+    List.foldl (\p d -> Dict.update p.ref (updateGroupFor p) d) projectPipelines pipelines
+
+
+cmdForProject : Model -> ProjectId -> Cmd Msg
+cmdForProject model projectId =
     case model.token of
         Just token ->
-            getUrl token (pipelinesUrl model.config.gitlabHost project.id) (GotPipelinesFor project.id) pipelinesDecoder
+            getUrl token (pipelinesUrl model.config.gitlabHost projectId) (GotPipelinesFor projectId) pipelinesDecoder
+
+        _ ->
+            Cmd.none
+
+
+cmdForPipelineDetail : Model -> ProjectId -> Pipeline -> Cmd Msg
+cmdForPipelineDetail model projectId pipeline =
+    case model.token of
+        Just token ->
+            getUrl token (pipelineDetailUrl model.config.gitlabHost projectId pipeline.id) (GotPipelineDetailFor projectId pipeline.ref) pipelineDetailDecoder
 
         _ ->
             Cmd.none
@@ -140,4 +216,4 @@ cmdForProject model project =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every (10 * 1000) Tick
+    Time.every (20 * 1000) FetchProjects

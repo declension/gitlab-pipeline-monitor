@@ -1,4 +1,4 @@
-module Model exposing (Flags, GitRef, GitlabData, Host, Model, Msg(..), Pipeline, PipelineStore, Project, ProjectId, Status(..), Token)
+module Model exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
@@ -25,17 +25,25 @@ type alias ProjectId =
     Int
 
 
+type alias PipelineId =
+    Int
+
+
 type alias GitRef =
     String
 
 
+type alias GitSha =
+    String
+
+
 type alias PipelineStore =
-    Dict ProjectId (Dict GitRef (List Pipeline))
+    Dict ProjectId (Dict GitRef (Dict PipelineId Pipeline))
 
 
 type alias GitlabData =
     { projects : List Project
-    , pipelines : Dict ProjectId (List Pipeline)
+    , pipelines : PipelineStore
     }
 
 
@@ -62,11 +70,29 @@ type alias Pipeline =
     , id : Int
     , status : Status
     , url : String
+    , detail : Maybe PipelineDetail
+    }
+
+
+type alias User =
+    { name : String
+    , username : String
+    , avatarUrl : Maybe String
+    }
+
+
+type alias PipelineDetail =
+    { id: PipelineId
+    , sha : GitSha
+    , user : User
+    , createdAt : Posix
+    , startedAt : Maybe Posix
+    , finishedAt : Maybe Posix
     }
 
 
 type alias Project =
-    { id : Int
+    { id : ProjectId
     , namespace : String
     , name : String
     , description : Maybe String
@@ -76,8 +102,9 @@ type alias Project =
 
 
 type Msg
-    = Tick Posix
+    = FetchProjects Posix
     | LinkClicked Browser.UrlRequest
     | GotPipelinesFor ProjectId (Result Http.Error (List Pipeline))
+    | GotPipelineDetailFor ProjectId GitRef (Result Http.Error (PipelineDetail))
     | GotProjects (Result Http.Error (List Project))
     | UrlChanged Url.Url
