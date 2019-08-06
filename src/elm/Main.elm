@@ -104,10 +104,13 @@ update msg model =
                         newPipelines =
                             Dict.update projectId (modifyProject pipelines) data.pipelines
 
+                        newModel =
+                            { model | data = { data | pipelines = newPipelines } }
+
                         cmds =
-                            pipelines |> List.map (cmdForPipelineDetail model projectId) |> Cmd.batch
+                            pipelines |> List.map (cmdForPipelineDetail newModel projectId) |> Cmd.batch
                     in
-                    ( { model | data = { data | pipelines = newPipelines } }, cmds )
+                    ( newModel, cmds )
 
         GotProjects result ->
             case result of
@@ -118,8 +121,7 @@ update msg model =
                                 |> List.map (.id >> cmdForProject model)
                                 |> Cmd.batch
                     in
-                    Debug.log ("Got projects " ++ Debug.toString projects)
-                        ( { model | data = { data | projects = projects } }, cmds )
+                    ( { model | data = { data | projects = Debug.log "Got projects " projects } }, cmds )
 
                 Err err ->
                     Debug.log ("FAILED to get projects (" ++ Debug.toString err ++ "). Current model")
@@ -142,8 +144,7 @@ update msg model =
                             model.data.pipelines
                                 |> Dict.update projectId updateProject
                     in
-                    Debug.log ("GOT pipeline detail: " ++ Debug.toString pipelineDetail)
-                        ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
+                    ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
 
                 Err err ->
                     Debug.log ("FAILED getting pipeline detail:" ++ Debug.toString err) ( model, Cmd.none )
@@ -202,9 +203,49 @@ cmdForProject model projectId =
 
 cmdForPipelineDetail : Model -> ProjectId -> Pipeline -> Cmd Msg
 cmdForPipelineDetail model projectId pipeline =
+    let
+        url =
+            pipelineDetailUrl model.config.gitlabHost projectId pipeline.id
+
+        msg =
+            GotPipelineDetailFor projectId pipeline.ref
+
+        getIt token =
+            getUrl token url msg pipelineDetailDecoder
+
+        currentPipeline =
+            Dict.get projectId model.data.pipelines
+                |> Maybe.andThen (Dict.get pipeline.ref)
+                |> Maybe.andThen (Dict.get pipeline.id)
+    in
     case model.token of
         Just token ->
-            getUrl token (pipelineDetailUrl model.config.gitlabHost projectId pipeline.id) (GotPipelineDetailFor projectId pipeline.ref) pipelineDetailDecoder
+            case currentPipeline of
+                Just cur ->
+                    case cur.detail of
+                        Just _ ->
+                            -- Got some detail, but maybe we don't need to update it
+                            case cur.status of
+                                Failed ->
+                                    Cmd.none
+
+                                Success ->
+                                    Cmd.none
+
+                                Cancelled ->
+                                    Cmd.none
+
+                                _ ->
+                                    Debug.log "Getting live one!"
+                                        getIt
+                                        token
+
+                        Nothing ->
+                            getIt token
+
+                Nothing ->
+                    Debug.log ("Have no pipeline somehow for " ++ pipeline.url)
+                        Cmd.none
 
         _ ->
             Cmd.none
