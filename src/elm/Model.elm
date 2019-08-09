@@ -18,6 +18,7 @@ type alias Model =
     , token : Maybe Token
     , data : GitlabData
     , url : Url.Url
+    , now : Posix
     }
 
 
@@ -54,6 +55,7 @@ type alias Host =
 type alias Flags =
     { gitlabHost : Host
     , gitlabAppId : String
+    , startupTime: Int
     }
 
 

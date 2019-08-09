@@ -2,10 +2,12 @@ module View exposing (iconFor, maybeViewOauthLink, view)
 
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
+import DateFormat.Relative exposing (relativeTime)
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, footer, h2, h3, img, li, main_, ol, span, text)
+import Html exposing (Html, a, div, footer, h2, h3, img, li, main_, ol, small, span, text)
 import Html.Attributes exposing (class, classList, href, id, src, target)
-import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
+import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineDetail, PipelineStore, Project, ProjectId, Status(..))
+import Time exposing (Posix)
 import Url exposing (Protocol(..), Url)
 import Utils exposing (relativise)
 import Wire exposing (authUrlFor)
@@ -42,11 +44,11 @@ viewMain model =
 
 viewProjects : Model -> List (Html msg)
 viewProjects model =
-    List.map (viewProjectFromPipelinesData model.data.pipelines) model.data.projects
+    List.map (viewProjectFromPipelinesData model.now model.data.pipelines) model.data.projects
 
 
-viewProjectFromPipelinesData : PipelineStore -> Project -> Html msg
-viewProjectFromPipelinesData allPipelines project =
+viewProjectFromPipelinesData : Posix -> PipelineStore -> Project -> Html msg
+viewProjectFromPipelinesData now allPipelines project =
     let
         innerValues _ =
             Dict.values
@@ -56,11 +58,11 @@ viewProjectFromPipelinesData allPipelines project =
                 |> Maybe.map (Dict.map innerValues)
                 |> Maybe.withDefault Dict.empty
     in
-    viewProject pipelinesByGitRef project
+    viewProject now pipelinesByGitRef project
 
 
-viewProject : Dict GitRef (List Pipeline) -> Project -> Html msg
-viewProject pipelines project =
+viewProject : Posix -> Dict GitRef (List Pipeline) -> Project -> Html msg
+viewProject now pipelines project =
     div [ class "project" ]
         ([ a [] [ text project.namespace ]
          , a [ href project.url, target "_blank" ]
@@ -68,7 +70,8 @@ viewProject pipelines project =
             ]
          ]
             ++ maybeDescription project.description
-            ++ [ viewProjectPipelines pipelines ]
+            ++ [ viewProjectPipelines now pipelines ]
+            ++ [small [] [text <| "Last updated " ++  relativeTime now project.lastActivity]]
         )
 
 
@@ -79,8 +82,8 @@ maybeDescription maybeDesc =
         |> Maybe.withDefault []
 
 
-viewProjectPipelines : Dict GitRef (List Pipeline) -> Html msg
-viewProjectPipelines pipelineGroups =
+viewProjectPipelines : Posix -> Dict GitRef (List Pipeline) -> Html msg
+viewProjectPipelines now pipelineGroups =
     if Dict.isEmpty pipelineGroups then
         div [ class "empty" ] [ text "😴" ]
 
@@ -93,8 +96,8 @@ viewProjectPipelines pipelineGroups =
                 Dict.remove "master" pipelineGroups
         in
         ol [ class "pipeline-groups" ]
-            (viewPipelineGroup ( "master", masterGroup )
-                :: (others |> Dict.toList |> List.sortWith latestIdComparer |> List.take maxNonDefaultBranches |> List.map viewPipelineGroup)
+            (viewPipelineGroup now ( "master", masterGroup )
+                :: (others |> Dict.toList |> List.sortWith latestIdComparer |> List.take maxNonDefaultBranches |> List.map (viewPipelineGroup now))
             )
 
 
@@ -117,33 +120,33 @@ maybeViewOauthLink model =
             []
 
 
-viewPipelineGroup : ( GitRef, List Pipeline ) -> Html msg
-viewPipelineGroup ( gitRef, pipelines ) =
+viewPipelineGroup : Posix -> ( GitRef, List Pipeline ) -> Html msg
+viewPipelineGroup now ( gitRef, pipelines ) =
     li [ classList [ ( "master", gitRef == "master" ), ( "group", True ) ] ]
         [ h3 []
             [ a [ href "#", target "_blank" ]
                 [ text gitRef ]
             ]
         , div [ class "pipelines" ]
-            (pipelines |> List.reverse |> List.take maxBuildsPerBranch |> List.map pipelineButtonOf)
+            (pipelines |> List.reverse |> List.take maxBuildsPerBranch |> List.map (pipelineButtonOf now))
         ]
 
 
-pipelineButtonOf : Pipeline -> Html msg
-pipelineButtonOf content =
+pipelineButtonOf : Posix -> Pipeline -> Html msg
+pipelineButtonOf now content =
     a [ class "pipeline", href content.url, target "_blank", class <| classFor content.status ]
         ([ span [ class "emoji" ] [ text <| iconFor content.status ]
          , span [ class "small" ] [ content.id |> String.fromInt |> text ]
          ]
-            ++ detail content
+            ++ (Maybe.map (detail now) content.detail |> Maybe.withDefault [])
         )
 
 
-detail : Pipeline -> List (Html msg)
-detail pipeline =
-    pipeline.detail
-        |> Maybe.map (\d -> [ img [ class "avatar", src (Maybe.withDefault "" d.user.avatarUrl) ] [ text d.user.name ] ])
-        |> Maybe.withDefault []
+detail : Posix -> PipelineDetail -> List (Html msg)
+detail now d =
+    [ img [ class "avatar", src (Maybe.withDefault "#" d.user.avatarUrl) ] [ text d.user.name ]
+    , small  [] [ text <| relativeTime now d.createdAt ]
+    ]
 
 
 classFor status =

@@ -5,7 +5,7 @@ import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Dict exposing (Dict)
 import Model exposing (Flags, GitRef, Host, Model, Msg(..), Pipeline, PipelineId, Project, ProjectId, Status(..), Token)
 import Result exposing (Result)
-import Time
+import Time exposing (Posix, millisToPosix)
 import Url exposing (Protocol(..), Url)
 import Utils exposing (ifNothing)
 import View exposing (view)
@@ -30,7 +30,13 @@ init flags url key =
             extractToken url
 
         model =
-            { config = flags, key = key, token = token, url = url, data = { pipelines = Dict.empty, projects = [] } }
+            { config = flags
+            , key = key
+            , token = token
+            , url = url
+            , data = { pipelines = Dict.empty, projects = [] }
+            , now = millisToPosix flags.startupTime
+            }
     in
     ( model, maybeGetRootData key url flags.gitlabHost token )
 
