@@ -1,9 +1,9 @@
-module View exposing (iconFor, maybeViewOauthLink, view, viewLink)
+module View exposing (iconFor, maybeViewOauthLink, view)
 
 import Browser
 import Config exposing (maxBuildsPerBranch, maxNonDefaultBranches)
 import Dict exposing (Dict)
-import Html exposing (Html, a, div, footer, h2, h3, li, main_, nav, ol, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, h3, li, main_, ol, span, text)
 import Html.Attributes exposing (class, classList, href, id, target)
 import Model exposing (Flags, GitRef, Model, Msg, Pipeline, PipelineStore, Project, ProjectId, Status(..))
 import Url exposing (Protocol(..), Url)
@@ -182,12 +182,3 @@ iconFor status =
 
         Pending ->
             "😴"
-
-
-
---            "😶"
-
-
-viewLink : String -> String -> Html msg
-viewLink path name =
-    li [] [ a [ href path ] [ text name ] ]
