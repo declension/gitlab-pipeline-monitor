@@ -20,11 +20,6 @@ view model =
     { title = "Gitlab Pipelines status"
     , body =
         [ main_ [ class ("pg-" ++ model.url.path) ] [ div [ id "wrapper", classList [ ( "loading", List.isEmpty model.data.projects ) ] ] (viewMain model) ]
-        , nav []
-            [ ul []
-                [ viewLink "/" "all projects"
-                ]
-            ]
         , footer [] [ div [] [ text "© 2019. ", a [ href "https://github.com/declension/" ] [ text "On GitHub" ] ] ]
         ]
     }
