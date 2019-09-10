@@ -2,11 +2,11 @@ module Config exposing (httpTimeout, maxBuildsPerBranch, maxNonDefaultBranches, 
 
 
 maxNonDefaultBranches =
-    2
+    3
 
 
 maxPipelinesPerProject =
-    24
+    36
 
 
 maxBuildsPerBranch =
