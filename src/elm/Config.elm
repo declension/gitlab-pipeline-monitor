@@ -14,7 +14,7 @@ maxBuildsPerBranch =
 
 
 maxProjects =
-    12
+    15
 
 
 httpTimeout =
