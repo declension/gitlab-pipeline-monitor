@@ -128,7 +128,7 @@ extractToken url =
     url.fragment
         |> Maybe.map (String.append "http://DUMMY?")
         |> Maybe.andThen Url.fromString
-        |> Maybe.andThen (parse (query toToken))
+        |> Maybe.andThen (Url.Parser.parse (query toToken))
         |> Maybe.withDefault Nothing
 
 

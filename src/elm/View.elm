@@ -20,7 +20,7 @@ view model =
     { title = "Gitlab Pipelines status"
     , body =
         [ main_ [ class ("pg-" ++ model.url.path) ] [ div [ id "wrapper", classList [ ( "loading", List.isEmpty model.data.projects ) ] ] (viewMain model) ]
-        , footer [] [ div [] [ text "© 2019. ", a [ href "https://github.com/declension/" ] [ text "On GitHub" ] ] ]
+        , footer [] [ div [] [ text "© 2019. ", a [ href "https://github.com/declension/gitlab-pipeline-monitor" ] [ text "On GitHub" ] ] ]
         ]
     }
 
@@ -48,14 +48,18 @@ viewProjectFromPipelinesData : Dict ProjectId (List Pipeline) -> Project -> Html
 viewProjectFromPipelinesData allPipelines project =
     let
         pipelinesByGitRef =
-            Dict.get project.id allPipelines |> Maybe.map byGitRef |> Maybe.withDefault Dict.empty
+            Dict.get project.id allPipelines
+                |> Maybe.map byGitRef
+                |> Maybe.withDefault Dict.empty
     in
     viewProject pipelinesByGitRef project
 
 
 byGitRef : List Pipeline -> Dict GitRef (List Pipeline)
 byGitRef pipelines =
-    pipelines |> List.map (\p -> ( p.ref, p )) |> List.foldl addItem Dict.empty
+    pipelines
+        |> List.map (\p -> ( p.ref, p ))
+        |> List.foldl addItem Dict.empty
 
 
 addItem : ( GitRef, Pipeline ) -> Dict GitRef (List Pipeline) -> Dict GitRef (List Pipeline)
@@ -65,7 +69,9 @@ addItem ( gitRef, pipeline ) cur =
 
 appendItem : a -> Maybe (List a) -> Maybe (List a)
 appendItem item maybeExistingList =
-    maybeExistingList |> Maybe.map (\existing -> Just (item :: existing)) |> Maybe.withDefault (Just [ item ])
+    maybeExistingList
+        |> Maybe.map (\existing -> Just (item :: existing))
+        |> Maybe.withDefault (Just [ item ])
 
 
 viewProject : Dict GitRef (List Pipeline) -> Project -> Html msg
@@ -100,11 +106,13 @@ viewProjectPipelines pipelineGroups =
 
             others =
                 Dict.remove "master" pipelineGroups
+                    |> Dict.toList
+                    |> List.sortWith latestIdComparer
+                    |> List.take maxNonDefaultBranches
+                    |> List.map viewPipelineGroup
         in
         ol [ class "pipeline-groups" ]
-            (viewPipelineGroup ( "master", masterGroup )
-                :: (others |> Dict.toList |> List.sortWith latestIdComparer |> List.take maxNonDefaultBranches |> List.map viewPipelineGroup)
-            )
+            (viewPipelineGroup ( "master", masterGroup ) :: others)
 
 
 latestIdComparer : ( a, List { b | id : Int } ) -> ( a, List { b | id : Int } ) -> Order
