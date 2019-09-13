@@ -29,6 +29,24 @@ type alias GitRef =
     String
 
 
+type alias Pipeline =
+    { ref : String
+    , id : Int
+    , status : Status
+    , url : String
+    }
+
+
+type alias Project =
+    { id : Int
+    , namespace : String
+    , name : String
+    , description : Maybe String
+    , url : String
+    , lastActivity : Posix
+    }
+
+
 type alias PipelineStore =
     Dict ProjectId (Dict GitRef (List Pipeline))
 
@@ -55,24 +73,6 @@ type Status
     | Failed
     | Pending
     | Cancelled
-
-
-type alias Pipeline =
-    { ref : String
-    , id : Int
-    , status : Status
-    , url : String
-    }
-
-
-type alias Project =
-    { id : Int
-    , namespace : String
-    , name : String
-    , description : Maybe String
-    , url : String
-    , lastActivity : Posix
-    }
 
 
 type Msg
