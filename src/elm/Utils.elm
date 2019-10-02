@@ -1,5 +1,6 @@
-module Utils exposing (ifNothing, prepend, relativise, stripQuestion)
+module Utils exposing (httpErrorToStr, ifNothing, prepend, relativise, stripQuestion)
 
+import Http exposing (Error(..))
 import Url exposing (Url)
 
 
@@ -52,3 +53,22 @@ relativise base new =
 
         _ ->
             base
+
+
+httpErrorToStr : Http.Error -> String
+httpErrorToStr err =
+    case err of
+        BadUrl url ->
+            "Invalid url: " ++ url
+
+        Timeout ->
+            "Timed out"
+
+        NetworkError ->
+            "Network Error"
+
+        BadStatus status ->
+            "Got HTTP " ++ String.fromInt status
+
+        BadBody body ->
+            "Malformed request: " ++ body

@@ -3,11 +3,12 @@ module Main exposing (main)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav exposing (Key, replaceUrl)
 import Dict
+import Logger exposing (log)
 import Model exposing (Flags, Host, Model, Msg(..), Pipeline, Project, Status(..), Token)
 import Result exposing (Result)
 import Time
 import Url exposing (Protocol(..), Url)
-import Utils exposing (ifNothing)
+import Utils exposing (httpErrorToStr, ifNothing)
 import View exposing (view)
 import Wire exposing (extractToken, getUrl, pipelinesDecoder, pipelinesUrl, projectsDecoder, projectsUrl)
 
@@ -39,8 +40,7 @@ maybeGetRootData : Key -> Url -> Host -> Maybe Token -> Cmd Msg
 maybeGetRootData key siteUrl host maybeToken =
     case maybeToken of
         Nothing ->
-            Debug.log "No token found!"
-            Cmd.none
+            log "No token"
 
         Just token ->
             let
@@ -79,33 +79,31 @@ update msg model =
                         newModel =
                             { model | token = ifNothing (extractToken url) model.token }
                     in
-                    Debug.log "Internal" ( newModel, Nav.pushUrl model.key (Url.toString url) )
+                    ( newModel, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                    Debug.log "External"
-                        ( model, Nav.load href )
+                    ( model, Nav.load href )
 
         UrlChanged url ->
             let
                 newModel =
                     { model | url = url, token = ifNothing (extractToken url) model.token }
             in
-            Debug.log "UrlChanged"
-                ( newModel, Cmd.none )
+            ( newModel, Cmd.none )
 
         GotPipelinesFor projectId result ->
             case result of
                 Err err ->
-                    Debug.log ("FAILED to get pipelines (" ++ Debug.toString err ++ "). Current model")
-                        ( model, Cmd.none )
+                    ( model, log ("FAILED to get pipelines (" ++ httpErrorToStr err ++ "). Current model") )
 
                 Ok values ->
                     let
                         newPipelines =
                             Dict.insert projectId values data.pipelines
                     in
-                    Debug.log ("Got pipelines" ++ Debug.toString values)
-                        ( { model | data = { data | pipelines = newPipelines } }, Cmd.none )
+                    ( { model | data = { data | pipelines = newPipelines } }
+                    , log ("Got " ++ String.fromInt (List.length values) ++ " pipeline(s) for project #" ++ String.fromInt projectId)
+                    )
 
         GotProjects result ->
             case result of
@@ -116,12 +114,10 @@ update msg model =
                                 |> List.map (cmdForProject model)
                                 |> Cmd.batch
                     in
-                    Debug.log ("Got projects " ++ Debug.toString projects)
-                        ( { model | data = { data | projects = projects } }, cmds )
+                    ( { model | data = { data | projects = projects } }, cmds )
 
                 Err err ->
-                    Debug.log ("FAILED to get projects (" ++ Debug.toString err ++ "). Current model")
-                        ( model, Cmd.none )
+                    ( model, log ("FAILED to get projects (" ++ httpErrorToStr err ++ "). Current model") )
 
 
 cmdForProject : Model -> Project -> Cmd Msg
