@@ -1,4 +1,4 @@
-$darkGrey: hsla(0, 0%, 15%, 0.75);
+$darkGrey: hsla(0, 0%, 13%, 0.8);
 $lightGrey: hsl(0, 0%, 77%);
 $nearBlack: hsl(0, 0%, 8%);
 
@@ -132,7 +132,7 @@ div.project {
     max-width: 28rem;
     min-width: 12rem;
     border: solid 2px hsl(0, 0%, 14%);
-    background: linear-gradient(-20deg, hsl(0, 0%, 5%), hsl(0, 0%, 17.5%));
+    background: linear-gradient(-20deg, hsl(0, 0%, 4%), hsl(0, 0%, 15%));
     margin: 0 1rem 1rem 0;
     border-radius: 0.25rem;
 
@@ -265,7 +265,8 @@ ol.pipeline-groups {
     }
 
     .master {
-        background: hsl(0, 0%, 17.5%);
+        background: hsla(0, 0%, 0%, 0.1);
+        border-color: lighten($darkGrey, 5);
         min-height: 4rem;
     }
 
